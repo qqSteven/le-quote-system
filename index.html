@@ -2380,12 +2380,20 @@ async function checkPushState(){
   const testBtn = document.getElementById('notifTestBtn');
   const unsubBtn = document.getElementById('notifUnsubscribeBtn');
 
-  // ** APK native notifications — always available, no subscribe needed **
+  // ** APK native notifications — check permission state **
   if(typeof AndroidNotifications !== 'undefined'){
-    if(statusEl) statusEl.textContent = t('notifNative');
-    if(subBtn) subBtn.style.display = 'none';
-    if(testBtn) testBtn.style.display = '';
-    if(unsubBtn) unsubBtn.style.display = 'none';
+    if(AndroidNotifications.isEnabled && AndroidNotifications.isEnabled()){
+      if(statusEl) statusEl.textContent = t('notifNative');
+      if(subBtn) subBtn.style.display = 'none';
+      if(testBtn) testBtn.style.display = '';
+      if(unsubBtn) unsubBtn.style.display = 'none';
+    } else {
+      // Permission not granted — show hint
+      if(statusEl) statusEl.textContent = '⚠️ 请在系统设置中开启通知权限';
+      if(subBtn) subBtn.style.display = 'none';
+      if(testBtn) testBtn.style.display = '';
+      if(unsubBtn) unsubBtn.style.display = 'none';
+    }
     return;
   }
 
@@ -2460,11 +2468,19 @@ async function unsubscribePush(){
 }
 
 async function testPush(){
+  // ** APK native — direct bridge, no subscribe needed **
+  if(typeof AndroidNotifications !== 'undefined' && AndroidNotifications.showNotification){
+    try {
+      AndroidNotifications.showNotification(t('notifTestTitle'), t('notifTestBody'));
+      toast('📤 测试推送已发送！请下拉通知栏查看');
+      return;
+    } catch(e){ toast('⚠️ 推送失败: ' + e.message); return; }
+  }
+  // ** Browser Web Push fallback **
   if(!('serviceWorker' in navigator)) return;
   const reg = await navigator.serviceWorker.ready;
   const sub = await reg.pushManager.getSubscription();
   if(!sub){ toast('⚠️ 请先开启通知'); return; }
-  // Self-push via service worker direct showNotification
   reg.showNotification(t('notifTestTitle'), {
     body: t('notifTestBody'),
     icon: 'logo_small.png',

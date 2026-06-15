@@ -6,6 +6,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
@@ -17,6 +18,7 @@ import android.webkit.WebViewClient;
 public class MainActivity extends Activity {
     private static final String HOME_URL = "https://qqsteven.github.io/le-quote-system/";
     private static final String CHANNEL_ID = "le_quote_notifications";
+    private static final int NOTIF_PERMISSION_REQUEST = 1001;
     private WebView webView;
 
     @Override
@@ -25,6 +27,9 @@ public class MainActivity extends Activity {
 
         // Create notification channel (required for Android 8+)
         createNotificationChannel();
+
+        // Request notification permission on Android 13+
+        requestNotificationPermission();
 
         webView = new WebView(this);
         setContentView(webView);
@@ -49,6 +54,18 @@ public class MainActivity extends Activity {
         webView.loadUrl(HOME_URL);
     }
 
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(
+                    new String[]{android.Manifest.permission.POST_NOTIFICATIONS},
+                    NOTIF_PERMISSION_REQUEST
+                );
+            }
+        }
+    }
+
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -68,6 +85,14 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void showNotification(String title, String body) {
             runOnUiThread(() -> {
+                // Check permission again before posting (Android 13+)
+                if (Build.VERSION.SDK_INT >= 33) {
+                    if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        return; // Permission not granted
+                    }
+                }
+
                 Intent intent = new Intent(MainActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 PendingIntent pending = PendingIntent.getActivity(
@@ -93,10 +118,20 @@ public class MainActivity extends Activity {
                 int id = (int) System.currentTimeMillis() % 100000;
                 try {
                     nm.notify(id, builder.build());
-                } catch (Exception e) {
-                    // Notification permission not granted — silently fail
+                } catch (SecurityException e) {
+                    // Permission denied — silently fail
                 }
             });
+        }
+
+        /** Check if notifications are enabled */
+        @JavascriptInterface
+        public boolean isEnabled() {
+            if (Build.VERSION.SDK_INT >= 33) {
+                return checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                        == PackageManager.PERMISSION_GRANTED;
+            }
+            return true; // Pre-Android 13, always enabled if channel exists
         }
     }
 
