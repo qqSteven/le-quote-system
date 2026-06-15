@@ -2244,7 +2244,7 @@ function doSubmitCounterOffer(q, coLeRate, coBroker, coDuty, coTotal, reason, co
 function closeCounterOfferModal(){ document.getElementById('counterOfferModal').classList.remove('show'); counterOfferTarget=null; }
 
 // ========== FILE UPLOAD / DOWNLOAD ==========
-let uploadedFiles = []; // {id, hsCode, docType, name, size, type, blobURL, uploadedAt}
+uploadedFiles = JSON.parse(localStorage.getItem('le_files')||'[]');
 
 function openUploadDialog(){
   // Populate HS dropdown
@@ -2891,71 +2891,6 @@ function playNotifSound(){
   const el = document.getElementById('soundToggle');
   if(el){ el.classList.toggle('on', soundEnabled); el.textContent = soundEnabled?'🔊':'🔇'; }
 })();
-
-// ========== FILE UPLOAD — base64 storage with preview ==========
-let uploadedFiles = JSON.parse(localStorage.getItem('le_files')||'[]');
-function handleFileUpload(event){
-  const files = event.target.files;
-  if(!files.length) return;
-  const hs = document.getElementById('uploadHsSelect')?.value || document.getElementById('uploadHsCustom')?.value.trim() || 'UNKNOWN';
-  const docType = document.getElementById('uploadDocType')?.value||'OTHER';
-  Array.from(files).forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = function(e){
-      uploadedFiles.unshift({
-        id:'FL-'+Date.now().toString(36).toUpperCase(),
-        name: file.name, type: docType, hs, size: file.size,
-        data: e.target.result,
-        uploadedAt: new Date().toISOString(),
-        uploadedBy: currentUser?.name||'anon'
-      });
-      localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
-      renderFiles();
-      toast(`📎 ${file.name} 上传成功`);
-    };
-    reader.readAsDataURL(file);
-  });
-  document.getElementById('uploadDialog').classList.remove('show');
-  event.target.value = '';
-}
-function renderFiles(){
-  const el = document.getElementById('fileList');
-  const filter = document.getElementById('fileQuoteFilter')?.value||'';
-  let files = filter ? uploadedFiles.filter(f=>f.hs===filter) : uploadedFiles;
-  if(!files.length){
-    el.innerHTML = '<p style="color:rgba(255,255,255,0.5);text-align:center;padding:40px">暂无文件，上传 CI/PL 以关联报价单</p>';
-    return;
-  }
-  el.innerHTML = files.map(f=>{
-    const isImage = f.data?.startsWith('data:image');
-    const previewHtml = isImage ? `<img src="${f.data}" style="max-width:100%;max-height:300px;border-radius:8px;margin-top:8px"><br>` : '';
-    return `<div class="card" style="margin-bottom:8px;padding:14px">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-        <strong>📎 ${f.name}</strong>
-        <span style="font-size:11px;color:var(--text-muted)">${f.type} · HS:${f.hs} · ${(f.size/1024).toFixed(1)}KB</span>
-      </div>
-      <div style="margin-top:4px;font-size:11px;color:rgba(255,255,255,0.3)">${new Date(f.uploadedAt).toLocaleString()} · ${f.uploadedBy}</div>
-      ${previewHtml}
-      <div style="margin-top:8px;display:flex;gap:6px">
-        <button class="btn btn-sm" style="font-size:10px" onclick="downloadFileData('${f.id}')">⬇ 下载</button>
-        <button class="btn btn-sm" style="font-size:10px;color:#dc3545" onclick="deleteFileData('${f.id}')">🗑 删除</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-function downloadFileData(id){
-  const f = uploadedFiles.find(x=>x.id===id);
-  if(!f||!f.data) return;
-  const a = document.createElement('a');
-  a.href = f.data; a.download = f.name; a.click();
-}
-function deleteFileData(id){
-  if(!confirm('确认删除此文件？')) return;
-  uploadedFiles = uploadedFiles.filter(f=>f.id!==id);
-  localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
-  renderFiles();
-  toast('🗑 已删除');
-}
 
 // ========== PDF EXPORT ==========
 function exportHistoryPDF(){
