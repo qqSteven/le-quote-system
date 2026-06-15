@@ -1083,6 +1083,12 @@ function updateUserDisplay(){
 // ========== REGISTERED USERS + ADMIN SYSTEM ==========
 let registeredUsers = (()=>{
   let users = JSON.parse(localStorage.getItem('le_users')||'[]');
+  // ** Migration: old email-keyed users → name-keyed **
+  let migrated = false;
+  users = users.map(u=>{
+    if(u.email && !u.name){ u.name = u.email; delete u.email; migrated = true; }
+    return u;
+  });
   if(users.length===0){
     // Seed default admin
     users = [{
@@ -1090,8 +1096,8 @@ let registeredUsers = (()=>{
       status:'active', createdAt:new Date().toISOString(),
       approvedBy:'system'
     }];
-    saveUsersRaw(users);
-  }
+  } else if(migrated){ saveUsersRaw(users); }
+  if(users.length===0){ saveUsersRaw(users); }
   return users;
 })();
 let currentUser = JSON.parse(localStorage.getItem('le_current_user')||'null');
