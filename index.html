@@ -432,6 +432,7 @@ select::-ms-expand { background: white; }
   <div class="tab" onclick="switchTab('files')" data-i18n="tabFiles">📁 文件管理</div>
   <div class="tab" onclick="switchTab('history')" data-i18n="tabHistory">📊 历史数据</div>
   <div class="tab" onclick="switchTab('ddp')" data-i18n="tabDdp">🚚 DDP</div>
+  <div class="tab" onclick="switchTab('admin')" data-i18n="tabAdmin" style="display:none">🛡️ 管理</div>
 </div>
 
 <!-- DASHBOARD PANEL -->
@@ -462,6 +463,12 @@ select::-ms-expand { background: white; }
 <div class="panel active" id="panel-tariff">
   <div class="card">
     <div class="card-title" data-i18n="hsTitle">🔍 HS编码选择</div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1;min-width:140px">
+        <label data-i18n="companyName">🏢 公司名称</label>
+        <input type="text" id="companyName" placeholder="输入公司名称..." style="padding:10px 14px;border:1.5px solid #e2e6ef;border-radius:10px;font-size:13px;width:100%;background:white">
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group" style="flex:3">
         <label data-i18n="hsSelectLabel">选择商品</label>
@@ -686,10 +693,37 @@ select::-ms-expand { background: white; }
   </div>
 </div>
 
-<!-- REGISTER/LOGIN MODAL (mock — Supabase Auth placeholder) -->
+<!-- ADMIN PANEL -->
+<div class="panel" id="panel-admin">
+  <div class="card">
+    <div class="card-title">🛡️ 管理员面板</div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-sm" style="background:#E8F5E9;color:#1B5E20" onclick="renderAdminPanel('pending')">⏳ 待审批</button>
+      <button class="btn btn-sm btn-outline" onclick="renderAdminPanel('active')">✅ 已激活</button>
+      <button class="btn btn-sm btn-outline" onclick="renderAdminPanel('all')">📋 全部</button>
+    </div>
+    <div id="adminUserList" style="overflow-x:auto">
+      <table class="comp-table" style="min-width:600px">
+        <thead><tr><th>邮箱</th><th>角色</th><th>状态</th><th>注册时间</th><th>操作</th></tr></thead>
+        <tbody id="adminUserBody"><tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.5);padding:20px">加载中...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 注册审批流程说明</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8">
+      🔹 用户注册后默认 <b style="color:#f0ad4e">pending</b> 状态<br>
+      🔹 管理员审核 → 点「✅ 通过」→ 用户可正常登录<br>
+      🔹 管理员拒绝 → 点「❌ 拒绝」→ 用户无法登录<br>
+      🔹 首次启动自动创建管理员：<code style="color:#c8a45c">admin@le-logistics.com</code> / 密码 <code style="color:#c8a45c">le2024</code>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER/LOGIN MODAL -->
 <div class="modal-overlay" id="registerModal"><div class="modal" style="max-width:400px">
-  <h3 data-i18n="registerTitle">👤 注册账号</h3>
-  <p style="color:#999;font-size:12px;margin-bottom:12px" data-i18n="registerHint">注册后自动分配角色，后续对接Supabase Auth</p>
+  <h3 data-i18n="registerTitle">👤 注册/登录</h3>
+  <p style="color:#999;font-size:12px;margin-bottom:12px">管理员审核后激活。管理员: admin@le-logistics.com / le2024</p>
   <div class="form-row"><div class="form-group">
     <label data-i18n="emailLabel">邮箱</label>
     <input id="regEmail" placeholder="user@le-logistics.com">
@@ -705,9 +739,12 @@ select::-ms-expand { background: white; }
       <option value="us">🇺🇸 美国团队 (US Team)</option>
     </select>
   </div></div>
-  <div style="display:flex;gap:12px;margin-top:16px">
-    <button class="btn btn-gold" onclick="doRegister()" style="flex:1" data-i18n="registerBtn">📝 注册</button>
-    <button class="btn" style="background:#eee;flex:1" onclick="quickLogin()" data-i18n="loginBtn">🔑 快速登录</button>
+  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+    <button class="btn btn-gold" onclick="doRegister()" style="flex:1;min-width:80px" data-i18n="registerBtn">📝 注册</button>
+    <button class="btn" style="background:#0D2B5E;color:#fff;flex:1;min-width:80px" onclick="doLogin()">🔑 登录</button>
+  </div>
+  <div style="text-align:center;margin-top:8px">
+    <button class="btn btn-sm" style="background:#eee;font-size:11px" onclick="quickLogin()">⚡ 快速演示</button>
   </div>
 </div></div>
 
@@ -793,8 +830,9 @@ select::-ms-expand { background: white; }
 // ========== I18N ==========
 const I18N = {
   zh: {
-    appTitle:"报价系统", tabTariff:"🔥 关税报价", tabDdp:"🚚 DDP 报价", tabApproval:"✅ 审批中心",
+    appTitle:"报价系统", tabTariff:"🔥 关税报价", tabDdp:"🚚 DDP 报价", tabApproval:"✅ 审批中心", tabAdmin:"🛡️ 管理",
     hsTitle:"🔍 HS编码选择", hsSelectLabel:"选择商品", pleaseSelect:"请选择", addHsBtn:"+ 添加HS",
+    companyName:"🏢 公司名称",
     cargoValue:"货物价值 ($)", colItem:"项目", colWithoutLE:"不用LE", colWithLE:"用LE",
     submitForApproval:"📤 提交审批", ddpTitle:"📦 DDP 到岸成本计算", ddpHs:"HS编码",
     ddpExwLabel:"EXW工厂价 ($)", ddpCnLog:"中国段物流 ($)", ddpSea:"海运费 ($)",
@@ -836,7 +874,7 @@ const I18N = {
     previewNotAvailable:"暂不支持预览此格式",
     tabDirect:"📋 直接报价", registerTitle:"👤 注册账号", registerHint:"注册后自动分配角色，后续对接Supabase Auth",
     emailLabel:"邮箱", passwordLabel:"密码", regRoleLabel:"注册角色",
-    registerBtn:"📝 注册", loginBtn:"🔑 快速登录", clickToRegister:"👤 点击注册/登录",
+    registerBtn:"📝 注册", loginBtn:"🔑 登录", clickToRegister:"👤 点击注册/登录",
     uploadDialogTitle:"📎 上传 CI / PL", uploadHsLabel:"关联 HS 编码", uploadDocType:"文件类型",
     uploadSelectFiles:"选择文件",
     directDesc:"中方提交客户原始成本 → 美方直接回传最终报价（一轮完成，无讨价还价）",
@@ -863,8 +901,9 @@ const I18N = {
     tariff:["锂离子蓄电池","碳纤维制品","钢结构件","肽类化合物","生物油脂"],
   },
   en: {
-    appTitle:"Quote System", tabTariff:"🔥 Tariff Quote", tabDdp:"🚚 DDP Quote", tabApproval:"✅ Approvals",
+    appTitle:"Quote System", tabTariff:"🔥 Tariff Quote", tabDdp:"🚚 DDP Quote", tabApproval:"✅ Approvals", tabAdmin:"🛡️ Admin",
     hsTitle:"🔍 HS Code Selection", hsSelectLabel:"Select Product", pleaseSelect:"Please Select", addHsBtn:"+ Add HS",
+    companyName:"🏢 Company Name",
     cargoValue:"Cargo Value ($)", colItem:"Item", colWithoutLE:"Without LE", colWithLE:"With LE",
     submitForApproval:"📤 Submit for Approval", ddpTitle:"📦 DDP Landed Cost", ddpHs:"HS Code",
     ddpExwLabel:"EXW Price ($)", ddpCnLog:"China Logistics ($)", ddpSea:"Ocean Freight ($)",
@@ -995,18 +1034,20 @@ function roleCan(permission){
   const map = {
     'submit_cost': ['cn'], 'respond_quote': ['us'],
     'submit_quote': ['cn'], 'approve_quote': ['us'],
-    'upload_files': ['cn'], 'view_all': ['cn','us'],
+    'upload_files': ['cn'], 'view_all': ['cn','us','admin'],
+    'manage_users': ['admin'],
   };
   return (map[permission]||[]).includes(currentRole);
 }
 function roleApplyUI(){
   const tabs = document.querySelectorAll('.tab');
-  // Tab order: dashboard(0), tariff(1), direct(2), approval(3), clients(4), files(5), history(6), ddp(7)
+  // Tab order: dashboard(0), tariff(1), direct(2), approval(3), clients(4), files(5), history(6), ddp(7), admin(8)
   const tabVisible = {
-    'cn': [true, true, true, true, true, true, true, true],
-    'us': [true, false, false, true, true, true, true, true],
+    'cn':    [true, true, true, true, true, true, true, true, false],
+    'us':    [true, false, false, true, true, true, true, true, false],
+    'admin': [true, true, true, true, true, true, true, true, true],
   };
-  const vis = tabVisible[currentRole] || [true,true,true,true,true,true,true,true];
+  const vis = tabVisible[currentRole] || [true,true,true,true,true,true,true,true,false];
   tabs.forEach((t,i)=>{ t.style.display = vis[i] ? '' : 'none'; });
   const uploadBtn = document.getElementById('uploadFileBtn');
   if(uploadBtn) uploadBtn.style.display = roleCan('upload_files') ? '' : 'none';
@@ -1028,11 +1069,24 @@ function updateUserDisplay(){
   }
 }
 
-// ========== REGISTERED USERS + APPROVER MANAGEMENT ==========
-let registeredUsers = JSON.parse(localStorage.getItem('le_users')||'[]');
+// ========== REGISTERED USERS + ADMIN SYSTEM ==========
+let registeredUsers = (()=>{
+  let users = JSON.parse(localStorage.getItem('le_users')||'[]');
+  if(users.length===0){
+    // Seed default admin
+    users = [{
+      id:'U-ADMIN', email:'admin@le-logistics.com', role:'admin',
+      status:'active', createdAt:new Date().toISOString(),
+      approvedBy:'system'
+    }];
+    saveUsersRaw(users);
+  }
+  return users;
+})();
 let currentUser = JSON.parse(localStorage.getItem('le_current_user')||'null');
 
-function saveUsers(){ localStorage.setItem('le_users', JSON.stringify(registeredUsers)); }
+function saveUsersRaw(arr){ localStorage.setItem('le_users', JSON.stringify(arr)); }
+function saveUsers(){ saveUsersRaw(registeredUsers); }
 function saveCurrentUser(){ localStorage.setItem('le_current_user', JSON.stringify(currentUser)); }
 
 function doRegister(){
@@ -1041,28 +1095,50 @@ function doRegister(){
   const role = document.getElementById('regRole').value;
   if(!email||!pwd){ toast('请填写邮箱和密码'); return; }
   const exists = registeredUsers.find(u=>u.email===email);
-  if(exists){ toast('该邮箱已注册，请直接登录'); return; }
-  const user = { id:'U-'+Date.now().toString(36).toUpperCase(), email, role, createdAt:new Date().toISOString() };
+  if(exists){
+    if(exists.status==='pending'){ toast('该邮箱正在等待管理员审批 ⏳'); return; }
+    if(exists.status==='rejected'){ toast('该邮箱已被管理员拒绝注册 ❌'); return; }
+    toast('该邮箱已注册，请直接登录'); return;
+  }
+  const user = {
+    id:'U-'+Date.now().toString(36).toUpperCase(), email, role,
+    status:'pending', createdAt:new Date().toISOString()
+  };
   registeredUsers.push(user);
   saveUsers();
+  document.getElementById('registerModal').classList.remove('show');
+  toast(`⏳ 注册已提交 — ${email}\n请等待管理员审批后登录`);
+  // Don't log in automatically — need admin approval
+}
+
+function doLogin(){
+  const email = document.getElementById('regEmail').value.trim();
+  const pwd = document.getElementById('regPassword').value.trim();
+  if(!email||!pwd){ toast('请填写邮箱和密码'); return; }
+  const user = registeredUsers.find(u=>u.email===email);
+  if(!user){ toast('❌ 账号不存在，请先注册'); return; }
+  if(user.status==='pending'){ toast('⏳ 账号等待管理员审批中'); return; }
+  if(user.status==='rejected'){ toast('❌ 账号已被管理员拒绝'); return; }
+  if(pwd!=='le2024' && email!=='admin@le-logistics.com'){ toast('❌ 密码错误'); return; }
   currentUser = user;
   saveCurrentUser();
   document.getElementById('registerModal').classList.remove('show');
-  if(role==='us') currentRole='us'; else currentRole='cn';
-  document.getElementById('roleSelect').value = currentRole;
+  currentRole = user.role;
+  document.getElementById('roleSelect').value = currentRole==='admin'?'cn':currentRole;
   roleApplyUI();
   refreshApproverSelect();
-  toast(`✅ 注册成功 — ${email} (${role==='us'?'🇺🇸 美方团队':'🇨🇳 中方团队'})`);
+  toast(`🔑 已登录 — ${email} (${user.role==='admin'?'🛡️ 管理员':user.role==='us'?'🇺🇸 美方':'🇨🇳 中方'})`);
 }
+
 function quickLogin(){
-  // Quick demo: login as US team
   const email = document.getElementById('regEmail').value.trim()||'demo@us.le-logistics.com';
   let user = registeredUsers.find(u=>u.email===email);
   if(!user){
-    user = { id:'U-DEMO', email, role:'us', createdAt:new Date().toISOString() };
+    user = { id:'U-DEMO', email, role:'us', status:'active', createdAt:new Date().toISOString(), approvedBy:'demo' };
     registeredUsers.push(user);
     saveUsers();
   }
+  if(user.status==='pending'){ toast('⏳ 该账号等待管理员审批中'); return; }
   currentUser = user;
   saveCurrentUser();
   document.getElementById('registerModal').classList.remove('show');
@@ -1073,6 +1149,7 @@ function quickLogin(){
   if(currentRole==='us') switchTab('approval');
   toast(`🔑 已登录 — ${email}`);
 }
+
 function logoutUser(){
   currentUser = null;
   saveCurrentUser();
@@ -1083,14 +1160,15 @@ function logoutUser(){
   toast('👋 已退出登录');
 }
 
-// Dynamically populate approver dropdown from registered US team members
+function isAdmin(){ return currentUser && currentUser.role==='admin' && currentUser.status==='active'; }
+
+// Dynamically populate approver dropdown from ACTIVE US team members only
 function refreshApproverSelect(){
   const sel = document.getElementById('approverSelect');
   if(!sel) return;
-  const usMembers = registeredUsers.filter(u=>u.role==='us');
-  // Always keep hardcoded defaults if no registered US users
+  const usMembers = registeredUsers.filter(u=>u.role==='us' && u.status==='active');
   if(!usMembers.length){
-    sel.innerHTML = '<option value="Tyson">Tyson</option><option value="Justin">Justin</option>';
+    sel.innerHTML = '<option value="Tyson">Tyson (未注册)</option><option value="Justin">Justin (未注册)</option>';
     return;
   }
   sel.innerHTML = usMembers.map(u=>`<option value="${u.email}">${u.email}</option>`).join('');
@@ -1099,7 +1177,7 @@ function refreshApproverSelect(){
 refreshApproverSelect();
 
 function switchTab(name) {
-  ['dashboard','tariff','direct','approval','clients','files','history','ddp'].forEach((n,i)=>{
+  ['dashboard','tariff','direct','approval','clients','files','history','ddp','admin'].forEach((n,i)=>{
     const tab = document.querySelectorAll('.tab')[i];
     if(tab) tab.classList.toggle('active', n===name);
     const panel = document.getElementById('panel-'+n);
@@ -1111,6 +1189,7 @@ function switchTab(name) {
   if(name==='history') renderHistory();
   if(name==='files'){ refreshQuoteFilter(); renderFiles(); }
   if(name==='clients') renderClients();
+  if(name==='admin') renderAdminPanel();
 }
 
 // ========== DASHBOARD ==========
@@ -1213,6 +1292,69 @@ function renderClients(){
       </tbody></table>
     </div>
   `).join('');
+}
+
+// ========== ADMIN PANEL ==========
+function renderAdminPanel(filter='pending'){
+  const users = filter==='all' ? [...registeredUsers] : registeredUsers.filter(u=>u.status===filter);
+  const roleLabel = { cn:'🇨🇳 中方', us:'🇺🇸 美方', admin:'🛡️ 管理员' };
+  const statusLabel = { pending:'⏳ 待审批', active:'✅ 已激活', rejected:'❌ 已拒绝' };
+  const statusColor = { pending:'#f0ad4e', active:'#28a745', rejected:'#dc3545' };
+  document.getElementById('adminUserBody').innerHTML = users.length===0
+    ? `<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.5);padding:20px">暂无${filter==='pending'?'待审批':filter==='active'?'已激活':'用户'}</td></tr>`
+    : users.map(u=>`
+    <tr>
+      <td style="font-weight:600">${u.email}</td>
+      <td>${roleLabel[u.role]||u.role}</td>
+      <td><span style="color:${statusColor[u.status]};font-weight:600">${statusLabel[u.status]||u.status}</span></td>
+      <td style="font-size:11px">${new Date(u.createdAt).toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+      <td>
+        ${u.status==='pending' ? `
+          <button class="btn btn-sm" style="background:#28a745;color:#fff;padding:4px 10px;font-size:11px;margin-right:4px" onclick="approveUser('${u.id}')">✅ 通过</button>
+          <button class="btn btn-sm" style="background:#dc3545;color:#fff;padding:4px 10px;font-size:11px" onclick="rejectUser('${u.id}')">❌ 拒绝</button>
+        ` : u.status==='active' ? `
+          <button class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:11px;color:#dc3545" onclick="blockUser('${u.id}')">⛔ 禁用</button>
+        ` : `
+          <button class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:11px;color:#28a745" onclick="approveUser('${u.id}')">↩ 恢复</button>
+        `}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function approveUser(id){
+  const u = registeredUsers.find(u=>u.id===id);
+  if(!u) return;
+  u.status = 'active';
+  u.approvedBy = currentUser.email;
+  u.approvedAt = new Date().toISOString();
+  saveUsers();
+  toast(`✅ ${u.email} 已通过审批`);
+  renderAdminPanel();
+  refreshApproverSelect();
+}
+
+function rejectUser(id){
+  const u = registeredUsers.find(u=>u.id===id);
+  if(!u) return;
+  if(!confirm(`确定拒绝 ${u.email} 的注册申请？`)) return;
+  u.status = 'rejected';
+  u.rejectedBy = currentUser.email;
+  u.rejectedAt = new Date().toISOString();
+  saveUsers();
+  toast(`❌ ${u.email} 已拒绝`);
+  renderAdminPanel();
+}
+
+function blockUser(id){
+  const u = registeredUsers.find(u=>u.id===id);
+  if(!u) return;
+  if(!confirm(`确定禁用 ${u.email}？该用户将无法登录。`)) return;
+  u.status = 'rejected';
+  saveUsers();
+  toast(`⛔ ${u.email} 已禁用`);
+  renderAdminPanel();
+  refreshApproverSelect();
 }
 
 // ========== CUSTOM HS ==========
@@ -1399,7 +1541,8 @@ function openSubmitModal(type) {
       </tbody></table>`;
   }
 
-  pendingSubmit = { type, hs, cargoVal, autoLeRate };
+  const companyName = document.getElementById('companyName')?.value.trim() || '';
+  pendingSubmit = { type, hs, cargoVal, autoLeRate, companyName };
   document.getElementById('submitEditFields').innerHTML = fields;
   refreshApproverSelect(); // Refresh US team member list
   document.getElementById('submitModal').classList.add('show');
@@ -1442,6 +1585,7 @@ function submitForApproval() {
   let quote = {
     id:'QT-'+Date.now().toString(36).toUpperCase(),
     hs:p.hs.code, name:p.hs.name, type:p.type, approver, note, status:'pending_review',
+    companyName: p.companyName || '',
     submittedAt:new Date().toLocaleString(),
     mfn:p.hs.mfn, s301:p.hs.s301, s122:p.hs.s122,
     leRate: editedLeRate, brokerFee: editedBroker,
@@ -1469,7 +1613,7 @@ function submitForApproval() {
   approvalQueue.unshift(quote);
   closeSubmitModal();
   toast(`✅ ${t('submitted')}: ${approver}`);
-  sendLocalPush('📋 新报价待审批', `${quote.hs} ${quote.name} → ${approver} 待审批`, 'approval');
+  sendLocalPush('📋 新报价待审批', `${quote.companyName?quote.companyName+' — ':''}${quote.hs} ${quote.name} → ${approver}`, 'approval');
   setTimeout(()=>switchTab('approval'), 800);
 }
 
@@ -1616,6 +1760,15 @@ function actOnApproval(id, newStatus) {
 
 // ========== LOCAL PUSH NOTIFICATION HELPER ==========
 async function sendLocalPush(title, body, targetTab){
+  // ** Native Android bridge (APK) — takes priority **
+  if(typeof AndroidNotifications !== 'undefined' && AndroidNotifications.showNotification){
+    try {
+      AndroidNotifications.showNotification(title, body);
+      return; // Native notification works, skip Web Push
+    } catch(e){ /* fall through to Web Push */ }
+  }
+  
+  // ** Web Push API (PWA in browser) **
   if(!('serviceWorker' in navigator)) return;
   const reg = await navigator.serviceWorker.ready;
   try {
