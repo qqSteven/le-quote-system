@@ -403,7 +403,108 @@ select::-ms-expand { background: white; }
   
   /* Approval actions */
   .approval-actions { flex-direction: column; }
+  
+  /* Bottom nav — show on mobile */
+  .bottom-nav { display: flex; }
 }
+/* ===== BOTTOM NAV (Mobile) ===== */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(10,18,38,0.95); backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(200,164,92,0.15);
+  z-index: 60; padding: 6px 0 env(safe-area-inset-bottom);
+}
+.bottom-nav .bn-item {
+  flex: 1; text-align: center; padding: 6px 2px; cursor: pointer;
+  color: rgba(255,255,255,0.4); font-size: 10px;
+  transition: all .2s;
+}
+.bottom-nav .bn-item .bn-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+.bottom-nav .bn-item.active { color: var(--gold); }
+
+/* ===== GLOBAL SEARCH ===== */
+.search-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(8,14,26,0.97); z-index: 70; display: none;
+  backdrop-filter: blur(16px); padding: 20px;
+}
+.search-overlay.show { display: flex; flex-direction: column; }
+.search-overlay input {
+  width: 100%; padding: 16px 20px; font-size: 18px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; color: #fff; outline: none; margin-bottom: 16px;
+}
+.search-overlay input:focus { border-color: var(--gold); }
+.search-results { 
+  flex: 1; overflow-y: auto; 
+  display: flex; flex-direction: column; gap: 8px;
+}
+.search-result-item {
+  padding: 14px; background: rgba(255,255,255,0.04);
+  border-radius: 12px; cursor: pointer; transition: all .2s;
+  border: 1px solid transparent;
+}
+.search-result-item:hover { background: rgba(200,164,92,0.08); border-color: rgba(200,164,92,0.2); }
+.search-result-item .sr-type { font-size: 10px; color: var(--gold); margin-bottom: 4px; }
+.search-result-item .sr-title { font-size: 14px; font-weight: 600; color: #fff; }
+.search-result-item .sr-detail { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+/* ===== CHART ===== */
+.chart-container { 
+  width: 100%; height: 200px; overflow: visible; margin: 12px 0;
+}
+.chart-bar { transition: height .5s ease; }
+
+/* ===== TAG BADGES ===== */
+.tag-badge {
+  display: inline-block; padding: 2px 10px; border-radius: 12px;
+  font-size: 11px; font-weight: 600;
+}
+.tag-urgent { background: #fce4ec; color: #c62828; }
+.tag-regular { background: #e3f2fd; color: #1565c0; }
+.tag-longterm { background: #e8f5e9; color: #2e7d32; }
+.tag-archived { background: #f3e5f5; color: #6a1b9a; }
+
+/* ===== COMMENTS ===== */
+.comment-section { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
+.comment-item { 
+  padding: 6px 0; font-size: 12px; color: rgba(255,255,255,0.6);
+  display: flex; gap: 8px;
+}
+.comment-item .c-author { font-weight: 600; white-space: nowrap; color: rgba(255,255,255,0.7); }
+.comment-input-row { display: flex; gap: 6px; margin-top: 8px; }
+.comment-input-row input {
+  flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+  color: #fff; font-size: 12px; outline: none;
+}
+.comment-input-row input:focus { border-color: var(--gold); }
+
+/* ===== SOUND TOGGLE ===== */
+.sound-toggle {
+  position: fixed; bottom: 80px; right: 16px; z-index: 55;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(10,18,38,0.85); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s; backdrop-filter: blur(10px);
+}
+.sound-toggle:hover { border-color: var(--gold); color: var(--gold); }
+.sound-toggle.on { color: var(--gold); }
+
+/* ===== COLOR UNIFICATION ===== */
+.btn-outline { 
+  background: transparent; color: var(--navy); 
+  border: 1.5px solid var(--navy); font-weight: 600;
+}
+.btn-outline:hover { background: var(--navy); color: #fff; }
+.btn-gold { 
+  background: linear-gradient(135deg, var(--gold), var(--gold-glow));
+  color: #0D2B5E; border: none; font-weight: 700;
+}
+.btn-gold:hover { box-shadow: 0 4px 16px rgba(200,164,92,0.4); transform: translateY(-1px); }
+.approval-actions .btn-gold { background: linear-gradient(135deg, #28a745, #20c997); color: #fff; }
 </style>
 </head>
 <body>
@@ -435,11 +536,38 @@ select::-ms-expand { background: white; }
   <div class="tab" onclick="switchTab('admin')" data-i18n="tabAdmin" style="display:none">🛡️ 管理</div>
 </div>
 
+<!-- BOTTOM NAV (Mobile only) -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="bn-item active" onclick="switchTab('dashboard')"><span class="bn-icon">📊</span><span>看板</span></div>
+  <div class="bn-item" onclick="switchTab('tariff')"><span class="bn-icon">🔥</span><span>报价</span></div>
+  <div class="bn-item" onclick="switchTab('approval')"><span class="bn-icon">✅</span><span>审批</span></div>
+  <div class="bn-item" onclick="switchTab('bulletin')"><span class="bn-icon">📢</span><span>公告</span></div>
+  <div class="bn-item" onclick="openGlobalSearch()"><span class="bn-icon">🔍</span><span>搜索</span></div>
+</nav>
+
+<!-- GLOBAL SEARCH OVERLAY -->
+<div class="search-overlay" id="searchOverlay">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+    <input id="globalSearchInput" placeholder="搜索 HS编码、客户、报价、公告..." oninput="doGlobalSearch()" autofocus>
+    <button class="btn btn-sm" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.2);padding:8px 16px;border-radius:20px" onclick="closeGlobalSearch()">✕</button>
+  </div>
+  <div class="search-results" id="globalSearchResults">
+    <p style="color:rgba(255,255,255,0.3);text-align:center;padding:40px">输入关键字开始搜索...</p>
+  </div>
+</div>
+
 <!-- DASHBOARD PANEL -->
 <div class="panel active" id="panel-dashboard">
   <div class="card" style="text-align:center;padding:30px 20px">
     <div class="card-title" data-i18n="dashboardTitle">📊 运营看板</div>
     <div class="summary-cards" style="justify-content:center" id="dashboardCards"></div>
+  </div>
+  <!-- Revenue chart -->
+  <div class="card">
+    <div class="card-title">📈 收入趋势</div>
+    <div class="chart-container" id="revenueChart">
+      <svg width="100%" height="180" id="revenueSvg" style="overflow:visible"><text x="50%" y="90" text-anchor="middle" fill="rgba(255,255,255,0.2)" font-size="13">暂无数据</text></svg>
+    </div>
   </div>
   <!-- Notification settings -->
   <div class="card" style="text-align:center">
@@ -683,6 +811,12 @@ select::-ms-expand { background: white; }
         <option value="responded">已回传</option>
         <option value="confirmed">已成交</option>
       </select>
+      <select id="histTag" style="flex:1;min-width:100px;padding:10px;border:1.5px solid #e2e6ef;border-radius:10px;font-size:13px;background:white">
+        <option value="all">全部标签</option>
+        <option value="urgent">🚨 紧急</option>
+        <option value="regular">📋 常规</option>
+        <option value="longterm">📅 长期</option>
+      </select>
       <button class="btn btn-gold btn-sm" onclick="renderHistory()">🔍 搜索</button>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
@@ -691,6 +825,7 @@ select::-ms-expand { background: white; }
       <span style="color:rgba(255,255,255,0.4)">—</span>
       <input type="date" id="histDateTo" style="padding:6px 10px;border:1.5px solid #e2e6ef;border-radius:8px;font-size:12px">
       <button class="btn btn-gold btn-sm" onclick="exportHistory()">📥 导出 CSV</button>
+      <button class="btn btn-sm btn-outline" onclick="exportHistoryPDF()">📄 PDF</button>
     </div>
     <div id="historyTableWrapper" style="overflow-x:auto">
       <table class="comp-table" id="historyTable">
@@ -821,6 +956,14 @@ select::-ms-expand { background: white; }
     <label data-i18n="note">备注 (可选)</label>
     <input id="submitNote" data-i18n-placeholder="notePlaceholder">
   </div></div>
+  <div class="form-row"><div class="form-group">
+    <label data-i18n="tagLabel">🏷️ 标签</label>
+    <select id="submitTag">
+      <option value="regular">📋 常规</option>
+      <option value="urgent">🚨 紧急</option>
+      <option value="longterm">📅 长期</option>
+    </select>
+  </div></div>
   <div style="display:flex;gap:12px;margin-top:16px">
     <button class="btn btn-gold" onclick="submitForApproval()" style="flex:1" data-i18n="confirmSubmit">确认提交</button>
     <button class="btn" style="background:#eee;flex:1" onclick="closeSubmitModal()" data-i18n="cancel">取消</button>
@@ -917,6 +1060,12 @@ const I18N = {
     notifNative:"🔔 原生通知已就绪 — 审批报价状态变化会自动推送",
     bulletinTitle:"📢 公告板", bulletinPost:"+ 发布", bulletinPostTitle:"📢 发布公告",
     bulletinContent:"内容", bulletinSend:"📤 发布",
+    tagLabel:"🏷️ 标签", tagUrgent:"🚨 紧急", tagRegular:"📋 常规", tagLongterm:"📅 长期",
+    globalSearch:"🔍 搜索", searchPlaceholder:"搜索 HS编码、客户、报价、公告...",
+    revenueChart:"📈 收入趋势", revenueNoData:"暂无成交数据",
+    commentPlaceholder:"写评论...", commentSend:"发送",
+    pdfExport:"📄 导出 PDF", fileUploadSuccess:"上传成功",
+    exportCSV:"📥 导出 CSV",
     tabDashboard:"📊 看板", tabClients:"👥 客户", dashboardTitle:"📊 运营看板",
     totalQuotes:"总报价数", totalRevenueLabel:"累计收入", recentActivity:"🕐 最近动态",
     confirmedLabel:"已成交", confirmDealBtn:"🎯 确认成交", confirmDealHint:"与客户达成协议后点击确认，收入计入看板统计",
@@ -991,6 +1140,12 @@ const I18N = {
     notifNative:"🔔 Native notifications ready — approval changes will push automatically",
     bulletinTitle:"📢 Bulletin", bulletinPost:"+ Post", bulletinPostTitle:"📢 New Post",
     bulletinContent:"Content", bulletinSend:"📤 Post",
+    tagLabel:"🏷️ Tag", tagUrgent:"🚨 Urgent", tagRegular:"📋 Regular", tagLongterm:"📅 Long-term",
+    globalSearch:"🔍 Search", searchPlaceholder:"Search HS, clients, quotes, bulletins...",
+    revenueChart:"📈 Revenue Trend", revenueNoData:"No confirmed deals yet",
+    commentPlaceholder:"Write comment...", commentSend:"Send",
+    pdfExport:"📄 Export PDF", fileUploadSuccess:"Uploaded",
+    exportCSV:"📥 CSV Export",
     tabDashboard:"📊 Dashboard", tabClients:"👥 Clients", dashboardTitle:"📊 Operations Dashboard",
     totalQuotes:"Total Quotes", totalRevenueLabel:"Total Revenue", recentActivity:"🕐 Recent Activity",
     confirmedLabel:"Closed", confirmDealBtn:"🎯 Confirm Deal", confirmDealHint:"Click after reaching agreement with client. Revenue counts toward dashboard.",
@@ -1232,6 +1387,12 @@ function switchTab(name) {
   if(name==='files'){ refreshQuoteFilter(); renderFiles(); }
   if(name==='clients') renderClients();
   if(name==='admin') renderAdminPanel();
+  if(name==='bulletin'){ switchTab('dashboard'); setTimeout(()=>document.getElementById('bulletinBoard')?.scrollIntoView({behavior:'smooth'}),300); }
+  // Update bottom nav
+  document.querySelectorAll('.bottom-nav .bn-item').forEach(item=>{
+    item.classList.toggle('active', item.querySelector('span:last-child')?.textContent === 
+      (name==='dashboard'?'看板':name==='tariff'?'报价':name==='approval'?'审批':name==='bulletin'?'公告':''));
+  });
 }
 
 // ========== DASHBOARD ==========
@@ -1263,6 +1424,8 @@ function renderDashboard(){
     <div class="summary-card"><div class="label">💰 ${t('totalRevenueLabel')}</div><div class="value highlight">${fmt(s.totalRevenue||0)}</div></div>
     <div class="summary-card"><div class="label">👥 ${t('tabClients')}</div><div class="value">${s.clients}</div></div>
   `;
+  // Revenue chart
+  renderRevenueChart();
   // Bulletin board
   renderBulletins();
   // Recent activity
@@ -1287,6 +1450,43 @@ function renderDashboard(){
       </div>
     </div>
   `).join('');
+}
+
+// ========== REVENUE CHART ==========
+function renderRevenueChart(){
+  const svg = document.getElementById('revenueSvg');
+  if(!svg) return;
+  const all = getAllQuotes().filter(q=>q.status==='confirmed');
+  if(!all.length){
+    svg.innerHTML = '<text x="50%" y="90" text-anchor="middle" fill="rgba(255,255,255,0.2)" font-size="13">暂无成交数据</text>';
+    return;
+  }
+  // Group by month
+  const monthly = {};
+  all.forEach(q=>{
+    const m = q.date ? q.date.substring(0,7) : '???';
+    if(!monthly[m]) monthly[m]=0;
+    monthly[m] += q.total||0;
+  });
+  const months = Object.keys(monthly).sort();
+  const last6 = months.slice(-6);
+  const maxVal = Math.max(...last6.map(m=>monthly[m]), 1);
+  const w=100/last6.length, h=140, gap=8, barW=(w-gap);
+  
+  let bars='', labels='';
+  last6.forEach((m,i)=>{
+    const val = monthly[m];
+    const bh = val/maxVal*h;
+    const x = i*w+gap/2;
+    const y = h-bh+20;
+    bars += `<rect x="${x}%" y="${y}" width="${barW}%" height="${bh}" rx="4" fill="url(#barGrad)" opacity="0.85"><title>$${val.toLocaleString()}</title></rect>`;
+    labels += `<text x="${(i*w+w/2)}%" y="${h+38}" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="10">${m.substring(5)}月</text>`;
+  });
+  svg.innerHTML = `
+    <defs><linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C8A45C"/><stop offset="100%" stop-color="#0D2B5E"/></linearGradient></defs>
+    <line x1="0" y1="${h+20}" x2="100%" y2="${h+20}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    ${bars}${labels}
+  `;
 }
 
 // ========== BULLETIN BOARD ==========
@@ -1317,6 +1517,8 @@ function postBulletin(){
   sendLocalPush('📢 新公告', `${currentUser.name}: ${content.slice(0, 80)}${content.length>80?'...':''}`, 'dashboard');
 }
 
+let bulletinComments = JSON.parse(localStorage.getItem('le_comments')||'{}');
+
 function renderBulletins(){
   const el = document.getElementById('bulletinBoard');
   if(!el) return;
@@ -1329,15 +1531,35 @@ function renderBulletins(){
   el.innerHTML = bulletinPosts.slice(0, 20).map(p=>{
     const d = new Date(p.createdAt);
     const time = d.toLocaleString('zh-CN', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const comments = bulletinComments[p.id] || [];
     return `
     <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <span style="font-weight:600;font-size:13px">${roleIcon[p.role]||''} ${p.author}</span>
         <span style="font-size:10px;color:rgba(255,255,255,0.3)">${roleLabel[p.role]||p.role} · ${time}</span>
       </div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.6;white-space:pre-wrap">${p.content}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.6;white-space:pre-wrap;word-break:break-word">${p.content}</div>
+      ${comments.length>0 ? `<div class="comment-section">${comments.map(c=>`<div class="comment-item"><span class="c-author">${c.author}:</span><span>${c.text}</span></div>`).join('')}</div>` : ''}
+      <div class="comment-input-row">
+        <input id="commentInput_${p.id}" placeholder="写评论..." onkeydown="if(event.key==='Enter')addComment('${p.id}')">
+        <button class="btn btn-sm" style="background:var(--gold);color:#0D2B5E;font-weight:600;padding:4px 12px;font-size:11px;border-radius:20px" onclick="addComment('${p.id}')">发送</button>
+      </div>
     </div>`;
   }).join('');
+}
+
+function addComment(postId){
+  if(!currentUser){ toast('请先登录'); return; }
+  const inp = document.getElementById('commentInput_'+postId);
+  if(!inp) return;
+  const text = inp.value.trim();
+  if(!text) return;
+  if(!bulletinComments[postId]) bulletinComments[postId] = [];
+  bulletinComments[postId].push({ author: currentUser.name, text, time: new Date().toISOString() });
+  if(bulletinComments[postId].length > 30) bulletinComments[postId] = bulletinComments[postId].slice(-30);
+  localStorage.setItem('le_comments', JSON.stringify(bulletinComments));
+  inp.value = '';
+  renderBulletins();
 }
 
 // ========== CLIENTS ==========
@@ -1674,12 +1896,13 @@ function submitForApproval() {
   const p = pendingSubmit;
   const approver = document.getElementById('approverSelect').value;
   const note = document.getElementById('submitNote').value.trim();
+  const tag = document.getElementById('submitTag')?.value || 'regular';
   const editedLeRate = parseFloat(document.getElementById('editLeRate')?.value)||p.autoLeRate;
   const editedBroker = parseFloat(document.getElementById('editBroker')?.value)||350;
 
   let quote = {
     id:'QT-'+Date.now().toString(36).toUpperCase(),
-    hs:p.hs.code, name:p.hs.name, type:p.type, approver, note, status:'pending_review',
+    hs:p.hs.code, name:p.hs.name, type:p.type, approver, note, tag, status:'pending_review',
     companyName: p.companyName || '',
     submittedAt:new Date().toLocaleString(),
     mfn:p.hs.mfn, s301:p.hs.s301, s122:p.hs.s122,
@@ -2352,6 +2575,7 @@ function renderHistory(){
   const search = (document.getElementById('histSearch')?.value||'').toLowerCase();
   const typeF = document.getElementById('histType')?.value||'all';
   const statusF = document.getElementById('histStatus')?.value||'all';
+  const tagF = document.getElementById('histTag')?.value||'all';
   let quotes = getAllQuotes();
   // Date range filter
   quotes = filterByDateRange(quotes);
@@ -2370,6 +2594,10 @@ function renderHistory(){
     return true;
   });
   if(statusF!=='all') quotes = quotes.filter(q=>q.status===statusF);
+  if(tagF!=='all') quotes = quotes.filter(q=>(q.tag||'regular')===tagF);
+
+  // Sort by date descending
+  quotes.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 
   const fmt = (n)=>'$'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
   const statusLabel = {
@@ -2382,19 +2610,22 @@ function renderHistory(){
     document.getElementById('historyBody').innerHTML = '<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">无匹配数据</td></tr>';
     return;
   }
-  document.getElementById('historyBody').innerHTML = quotes.map(q=>`
+  document.getElementById('historyBody').innerHTML = quotes.map(q=>{
+    const tagLabel = { urgent:'🚨', regular:'📋', longterm:'📅' };
+    const tagClass = { urgent:'tag-urgent', regular:'tag-regular', longterm:'tag-longterm' };
+    return `
     <tr>
       <td style="font-size:12px">${q.date}</td>
       <td><span style="font-size:11px;color:#666">${q.type}</span></td>
-      <td style="font-weight:600">${q.hs}</td>
+      <td style="font-weight:600">${q.hs} ${q.tag&&q.tag!=='regular'?`<span class="tag-badge ${tagClass[q.tag]}">${tagLabel[q.tag]}</span>`:''}</td>
       <td>${q.name}</td>
-      <td>${q.client}</td>
-      <td>${fmt(q.cargo)}</td>
+      <td>${q.client||''}</td>
+      <td>${fmt(q.cargo||0)}</td>
       <td>${q.leRate?q.leRate.toFixed(1)+'%':'—'}</td>
       <td style="font-weight:600;color:#0D2B5E">${q.total?fmt(q.total):'—'}</td>
       <td><span class="badge badge-${statusClass[q.status]||'pending'}">${statusLabel[q.status]||q.status}</span></td>
     </tr>
-  `).join('');
+  `}).join('');
 }
 
 function exportHistory(){
@@ -2587,7 +2818,193 @@ window.addEventListener('load', () => {
   setTimeout(checkPushState, 2000); // Wait for SW to be ready
 });
 
+// ========== GLOBAL SEARCH ==========
+function openGlobalSearch(){
+  document.getElementById('searchOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('globalSearchInput').focus(), 100);
+}
+function closeGlobalSearch(){
+  document.getElementById('searchOverlay').classList.remove('show');
+  document.getElementById('globalSearchInput').value = '';
+  document.getElementById('globalSearchResults').innerHTML = '<p style="color:rgba(255,255,255,0.3);text-align:center;padding:40px">输入关键字开始搜索...</p>';
+}
+function doGlobalSearch(){
+  const q = (document.getElementById('globalSearchInput')?.value||'').toLowerCase().trim();
+  const el = document.getElementById('globalSearchResults');
+  if(!q){ el.innerHTML = '<p style="color:rgba(255,255,255,0.3);text-align:center;padding:40px">输入关键字开始搜索...</p>'; return; }
+  const results = [];
+  // Search quotes
+  getAllQuotes().forEach(qt=>{
+    if(qt.hs?.includes(q)||qt.name?.toLowerCase().includes(q)||qt.client?.toLowerCase().includes(q)||qt.approver?.toLowerCase().includes(q)||qt.companyName?.toLowerCase().includes(q)){
+      results.push({type:'报价', title:qt.hs+' '+qt.name, detail:(qt.client||'')+' · $'+(qt.total||qt.cargoValue||0).toLocaleString(), action:()=>switchTab('history')});
+    }
+  });
+  // Search bulletins
+  bulletinPosts.forEach(p=>{
+    if(p.content.toLowerCase().includes(q)||p.author.toLowerCase().includes(q)){
+      results.push({type:'公告', title:p.author+': '+p.content.slice(0,60), detail:new Date(p.createdAt).toLocaleString(), action:()=>{closeGlobalSearch();switchTab('dashboard');setTimeout(()=>document.getElementById('bulletinBoard').scrollIntoView({behavior:'smooth'}),300);}});
+    }
+  });
+  // Search clients
+  getClientList().forEach(c=>{
+    if(c.name.toLowerCase().includes(q)){
+      results.push({type:'客户', title:c.name, detail:c.quotes.length+'条报价 · '+c.lastDate, action:()=>switchTab('clients')});
+    }
+  });
+  if(!results.length){
+    el.innerHTML = '<p style="color:rgba(255,255,255,0.3);text-align:center;padding:40px">🔍 未找到匹配结果</p>';
+    return;
+  }
+  el.innerHTML = results.slice(0,20).map(r=>`
+    <div class="search-result-item" onclick="closeGlobalSearch();${r.action.toString().replace(/^\(\)\s*=>\s*\{/,'').replace(/\}$/,'')}">
+      <div class="sr-type">${r.type}</div>
+      <div class="sr-title">${r.title}</div>
+      <div class="sr-detail">${r.detail}</div>
+    </div>
+  `).join('');
+}
+
+// ========== SOUND NOTIFICATIONS ==========
+let soundEnabled = localStorage.getItem('le_sound')!=='off';
+function toggleSound(){
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('le_sound', soundEnabled?'on':'off');
+  const el = document.getElementById('soundToggle');
+  el.classList.toggle('on', soundEnabled);
+  el.textContent = soundEnabled ? '🔊' : '🔇';
+}
+function playNotifSound(){
+  if(!soundEnabled) return;
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 800; osc.type = 'sine';
+    gain.gain.value = 0.08;
+    osc.start(); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.3);
+    osc.stop(ctx.currentTime+0.3);
+  } catch(e){/* silent */}
+}
+// Init sound toggle
+(function(){
+  const el = document.getElementById('soundToggle');
+  if(el){ el.classList.toggle('on', soundEnabled); el.textContent = soundEnabled?'🔊':'🔇'; }
+})();
+
+// ========== FILE UPLOAD — base64 storage with preview ==========
+let uploadedFiles = JSON.parse(localStorage.getItem('le_files')||'[]');
+function handleFileUpload(event){
+  const files = event.target.files;
+  if(!files.length) return;
+  const hs = document.getElementById('uploadHsSelect')?.value || document.getElementById('uploadHsCustom')?.value.trim() || 'UNKNOWN';
+  const docType = document.getElementById('uploadDocType')?.value||'OTHER';
+  Array.from(files).forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = function(e){
+      uploadedFiles.unshift({
+        id:'FL-'+Date.now().toString(36).toUpperCase(),
+        name: file.name, type: docType, hs, size: file.size,
+        data: e.target.result,
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: currentUser?.name||'anon'
+      });
+      localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
+      renderFiles();
+      toast(`📎 ${file.name} 上传成功`);
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('uploadDialog').classList.remove('show');
+  event.target.value = '';
+}
+function renderFiles(){
+  const el = document.getElementById('fileList');
+  const filter = document.getElementById('fileQuoteFilter')?.value||'';
+  let files = filter ? uploadedFiles.filter(f=>f.hs===filter) : uploadedFiles;
+  if(!files.length){
+    el.innerHTML = '<p style="color:rgba(255,255,255,0.5);text-align:center;padding:40px">暂无文件，上传 CI/PL 以关联报价单</p>';
+    return;
+  }
+  el.innerHTML = files.map(f=>{
+    const isImage = f.data?.startsWith('data:image');
+    const previewHtml = isImage ? `<img src="${f.data}" style="max-width:100%;max-height:300px;border-radius:8px;margin-top:8px"><br>` : '';
+    return `<div class="card" style="margin-bottom:8px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <strong>📎 ${f.name}</strong>
+        <span style="font-size:11px;color:var(--text-muted)">${f.type} · HS:${f.hs} · ${(f.size/1024).toFixed(1)}KB</span>
+      </div>
+      <div style="margin-top:4px;font-size:11px;color:rgba(255,255,255,0.3)">${new Date(f.uploadedAt).toLocaleString()} · ${f.uploadedBy}</div>
+      ${previewHtml}
+      <div style="margin-top:8px;display:flex;gap:6px">
+        <button class="btn btn-sm" style="font-size:10px" onclick="downloadFileData('${f.id}')">⬇ 下载</button>
+        <button class="btn btn-sm" style="font-size:10px;color:#dc3545" onclick="deleteFileData('${f.id}')">🗑 删除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function downloadFileData(id){
+  const f = uploadedFiles.find(x=>x.id===id);
+  if(!f||!f.data) return;
+  const a = document.createElement('a');
+  a.href = f.data; a.download = f.name; a.click();
+}
+function deleteFileData(id){
+  if(!confirm('确认删除此文件？')) return;
+  uploadedFiles = uploadedFiles.filter(f=>f.id!==id);
+  localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
+  renderFiles();
+  toast('🗑 已删除');
+}
+
+// ========== PDF EXPORT ==========
+function exportHistoryPDF(){
+  const all = getAllQuotes();
+  const from = document.getElementById('histDateFrom')?.value;
+  const to = document.getElementById('histDateTo')?.value;
+  let data = all;
+  if(from) data = data.filter(q=>q.date>=from);
+  if(to) data = data.filter(q=>q.date<=to);
+  if(!data.length){ toast('无数据可导出'); return; }
+  const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+  const rows = data.map(q=>`${q.date||''},${q.type||''},${q.hs||''},${q.name||''},${q.client||q.approver||''},${fmt(q.cargoValue||0)},${q.leRate?q.leRate.toFixed(1)+'%':''},${fmt(q.total||0)},${q.status||''}`).join('\n');
+  const csv = '日期,类型,HS编码,商品,客户/审批人,货值,LE税率,总费用,状态\n'+rows;
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'LE_报价导出_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  toast('📄 已导出 CSV');
+}
+
+// ========== AUDIO HOOK INTO PUSH ==========
+// Patch sendLocalPush to play sound
+const _origSendLocalPush = sendLocalPush;
+sendLocalPush = async function(title, body, targetTab){
+  playNotifSound();
+  return _origSendLocalPush(title, body, targetTab);
+};
+
+// ========== LONG PRESS on mobile quote items ==========
+if('ontouchstart' in window){
+  let longPressTimer;
+  document.addEventListener('touchstart', function(e){
+    const target = e.target.closest('.approval-item');
+    if(!target) return;
+    longPressTimer = setTimeout(()=>{
+      const hsEl = target.querySelector('.approval-hs');
+      const name = hsEl?.textContent||'此报价';
+      if(confirm(`长按操作 — ${name}\n\n复制信息到剪贴板？`)){
+        navigator.clipboard?.writeText(target.textContent?.trim()||name).then(()=>toast('📋 已复制'));
+      }
+    }, 800);
+  }, {passive:true});
+  document.addEventListener('touchend', ()=>clearTimeout(longPressTimer));
+  document.addEventListener('touchmove', ()=>clearTimeout(longPressTimer));
+}
+
 </script>
+<div id="soundToggle" class="sound-toggle on" onclick="toggleSound()" title="声音提醒">🔊</div>
 <div id="versionFooter" style="text-align:center;font-size:10px;color:rgba(255,255,255,0.2);padding:12px 0 20px;margin-top:8px">
   LE Quote v1.1 · <span id="verTime"></span>
 </div>
