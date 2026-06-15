@@ -158,19 +158,16 @@ public class MainActivity extends Activity {
                     }
                     byte[] bytes = android.util.Base64.decode(cleanData, android.util.Base64.DEFAULT);
                     
-                    java.io.File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    // Use app-specific external dir (no permission needed on any Android version)
+                    java.io.File dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+                    if (dir == null) dir = getFilesDir(); // fallback to internal
                     if (!dir.exists()) dir.mkdirs();
                     java.io.File file = new java.io.File(dir, fileName);
                     java.io.FileOutputStream fos = new java.io.FileOutputStream(file);
                     fos.write(bytes);
                     fos.close();
                     
-                    // Notify media scanner so file shows up in Downloads
-                    android.content.Intent scanIntent = new android.content.Intent(android.content.Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                    scanIntent.setData(Uri.fromFile(file));
-                    sendBroadcast(scanIntent);
-                    
-                    Toast.makeText(MainActivity.this, "📥 已保存: " + fileName + " → 下载文件夹", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "📥 已保存: " + fileName + " (内部存储/Download)", Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "❌ 保存失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
