@@ -440,6 +440,17 @@ select::-ms-expand { background: white; }
     <div class="card-title" data-i18n="dashboardTitle">📊 运营看板</div>
     <div class="summary-cards" style="justify-content:center" id="dashboardCards"></div>
   </div>
+  <!-- Notification settings -->
+  <div class="card" style="text-align:center">
+    <div class="card-title" data-i18n="notifTitle">🔔 通知设置</div>
+    <div style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
+      <span id="notifStatus" style="font-size:13px;color:#8892a4">检查中...</span>
+      <button class="btn btn-sm" id="notifSubscribeBtn" onclick="subscribePush()" style="display:none" data-i18n="notifSubscribe">开启通知</button>
+      <button class="btn btn-sm btn-outline" id="notifTestBtn" onclick="testPush()" style="display:none" data-i18n="notifTest">🧪 测试推送</button>
+      <button class="btn btn-sm btn-outline" id="notifUnsubscribeBtn" onclick="unsubscribePush()" style="display:none;color:#dc3545" data-i18n="notifUnsubscribe">关闭通知</button>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px" data-i18n="notifHint">开启后，报价审批状态变化会实时推送</div>
+  </div>
   <!-- Recent activity -->
   <div class="card">
     <div class="card-title" data-i18n="recentActivity">🕐 最近动态</div>
@@ -840,6 +851,11 @@ const I18N = {
     profitExplainPlaceholder:"请说明为何低于利润底线，例如：大客户战略性亏损、长期合同锁定、竞争性报价等...",
     profitOverrideBtn:"⚠️ 强制提交 (已填写说明)",
     tabHistory:"📊 历史数据", historyTitle:"📊 历史报价数据",
+    notifTitle:"🔔 通知设置", notifSubscribe:"开启通知", notifTest:"🧪 测试推送", notifUnsubscribe:"关闭通知",
+    notifHint:"开启后，报价审批状态变化会实时推送",
+    notifEnabled:"✅ 已开启 — 审批状态变化将实时推送", notifDisabled:"🔕 未开启 — 点击按钮启用推送通知",
+    notifDenied:"⚠️ 通知权限被拒绝，请在浏览器设置中开启", notifNotSupported:"⚠️ 当前浏览器不支持推送通知",
+    notifTestTitle:"LE 报价系统", notifTestBody:"🧪 这是一条测试推送！推送功能运行正常。",
     tabDashboard:"📊 看板", tabClients:"👥 客户", dashboardTitle:"📊 运营看板",
     totalQuotes:"总报价数", totalRevenueLabel:"累计收入", recentActivity:"🕐 最近动态",
     confirmedLabel:"已成交", confirmDealBtn:"🎯 确认成交", confirmDealHint:"与客户达成协议后点击确认，收入计入看板统计",
@@ -905,6 +921,11 @@ const I18N = {
     profitExplainPlaceholder:"Explain why margin is below threshold, e.g. strategic account, competitive pricing, long-term contract...",
     profitOverrideBtn:"⚠️ Force Submit (explanation attached)",
     tabHistory:"📊 History", historyTitle:"📊 Historical Quotes",
+    notifTitle:"🔔 Notifications", notifSubscribe:"Enable", notifTest:"🧪 Test Push", notifUnsubscribe:"Disable",
+    notifHint:"Real-time push when quote/approval status changes",
+    notifEnabled:"✅ Enabled — approval updates will push in real-time", notifDisabled:"🔕 Disabled — tap button to enable push",
+    notifDenied:"⚠️ Notification permission denied. Enable in browser settings.", notifNotSupported:"⚠️ Push not supported in this browser",
+    notifTestTitle:"LE Quote System", notifTestBody:"🧪 Test push notification — it works!",
     tabDashboard:"📊 Dashboard", tabClients:"👥 Clients", dashboardTitle:"📊 Operations Dashboard",
     totalQuotes:"Total Quotes", totalRevenueLabel:"Total Revenue", recentActivity:"🕐 Recent Activity",
     confirmedLabel:"Closed", confirmDealBtn:"🎯 Confirm Deal", confirmDealHint:"Click after reaching agreement with client. Revenue counts toward dashboard.",
@@ -1448,6 +1469,7 @@ function submitForApproval() {
   approvalQueue.unshift(quote);
   closeSubmitModal();
   toast(`✅ ${t('submitted')}: ${approver}`);
+  sendLocalPush('📋 新报价待审批', `${quote.hs} ${quote.name} → ${approver} 待审批`, 'approval');
   setTimeout(()=>switchTab('approval'), 800);
 }
 
@@ -1588,7 +1610,24 @@ function actOnApproval(id, newStatus) {
   q.status = 'approved';
   document.getElementById('approvalDetailModal').classList.remove('show');
   toast(`🤝 ${t('agreed')} — ${q.hs} ${q.name}`);
+  sendLocalPush('👍 报价已批准', `${q.hs} ${q.name} — 已批准，可确认成交`, 'dashboard');
   renderApproval();
+}
+
+// ========== LOCAL PUSH NOTIFICATION HELPER ==========
+async function sendLocalPush(title, body, targetTab){
+  if(!('serviceWorker' in navigator)) return;
+  const reg = await navigator.serviceWorker.ready;
+  try {
+    reg.showNotification(title, {
+      body: body,
+      icon: 'logo_small.png',
+      badge: 'logo_small.png',
+      vibrate: [200, 100, 200],
+      tag: 'le-quote',
+      data: { url: targetTab ? './#' + targetTab : './' }
+    });
+  } catch(e){ /* silent fail — push not critical */ }
 }
 
 // ========== CONFIRM DEAL (CN clicks after US approves/responds) ==========
@@ -1599,6 +1638,7 @@ function confirmDeal(id, type){
     q.status = 'confirmed';
     document.getElementById('approvalDetailModal').classList.remove('show');
     toast(`🎯 ${t('confirmedLabel')} — ${q.hs} ${q.name} | 收入 $${(q.total||0).toLocaleString()}`);
+    sendLocalPush('🎯 交易已确认', `${q.hs} ${q.name} — 收入 $${(q.total||0).toLocaleString()}`, 'dashboard');
     renderApproval();
     renderDashboard();
   } else if(type==='direct'){
@@ -1606,6 +1646,7 @@ function confirmDeal(id, type){
     if(!r) return;
     r.status = 'confirmed';
     toast(`🎯 ${t('confirmedLabel')} — ${r.hs} ${r.name} | 收入 $${(r.response?.total||0).toLocaleString()}`);
+    sendLocalPush('🎯 交易已确认', `${r.hs} ${r.name} — 收入 $${(r.response?.total||0).toLocaleString()}`, 'dashboard');
     renderDirectRequests();
     renderDashboard();
   }
@@ -1725,6 +1766,7 @@ function doSubmitCounterOffer(q, coLeRate, coBroker, coDuty, coTotal, reason, co
   closeCounterOfferModal();
   document.getElementById('approvalDetailModal').classList.remove('show');
   toast(`✋ ${t('disagreed')} — ${q.hs} ${q.name} | 还盘已提交`);
+  sendLocalPush('✋ 还盘已提交', `${q.hs} ${q.name} — 新关税 ${coLeRate}% / Broker $${coBroker}`, 'approval');
   renderApproval();
 }
 
@@ -2149,6 +2191,127 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+
+// ========== WEB PUSH NOTIFICATIONS ==========
+const VAPID_PUBLIC_KEY = 'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEQbN_M759mQ5aB3sSuyg2MlKrF7v7IrCFcvVtBRp6u2cmCN8mYg9DGASvfcdft8SmmQPZz-SkxmccPVHfGlk0Xg';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+async function checkPushState(){
+  const statusEl = document.getElementById('notifStatus');
+  const subBtn = document.getElementById('notifSubscribeBtn');
+  const testBtn = document.getElementById('notifTestBtn');
+  const unsubBtn = document.getElementById('notifUnsubscribeBtn');
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)){
+    if(statusEl) statusEl.textContent = t('notifNotSupported');
+    return;
+  }
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription();
+  if(sub){
+    if(statusEl) statusEl.textContent = t('notifEnabled');
+    if(subBtn) subBtn.style.display = 'none';
+    if(testBtn) testBtn.style.display = '';
+    if(unsubBtn) unsubBtn.style.display = '';
+  } else {
+    const perm = Notification.permission;
+    if(perm === 'denied'){
+      if(statusEl) statusEl.textContent = t('notifDenied');
+      if(subBtn) subBtn.style.display = 'none';
+    } else {
+      if(statusEl) statusEl.textContent = t('notifDisabled');
+      if(subBtn) subBtn.style.display = '';
+    }
+    if(testBtn) testBtn.style.display = 'none';
+    if(unsubBtn) unsubBtn.style.display = 'none';
+  }
+}
+
+async function subscribePush(){
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+    // Store subscription
+    const subs = JSON.parse(localStorage.getItem('le_push_subs') || '[]');
+    subs.push({
+      endpoint: sub.endpoint,
+      keys: {
+        p256dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh')))),
+        auth: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth'))))
+      },
+      email: currentUser ? currentUser.email : 'anon',
+      createdAt: new Date().toISOString()
+    });
+    // Deduplicate by endpoint
+    const unique = {};
+    subs.forEach(s => { unique[s.endpoint] = s; });
+    localStorage.setItem('le_push_subs', JSON.stringify(Object.values(unique)));
+    toast('🔔 ' + t('notifEnabled'));
+    checkPushState();
+  } catch(e) {
+    console.error('Push subscribe error:', e);
+    toast('⚠️ ' + t('notifDenied'));
+  }
+}
+
+async function unsubscribePush(){
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription();
+  if(sub){
+    await sub.unsubscribe();
+    // Remove from storage
+    const subs = JSON.parse(localStorage.getItem('le_push_subs') || '[]');
+    const filtered = subs.filter(s => s.endpoint !== sub.endpoint);
+    localStorage.setItem('le_push_subs', JSON.stringify(filtered));
+  }
+  toast('🔕 ' + t('notifDisabled'));
+  checkPushState();
+}
+
+async function testPush(){
+  if(!('serviceWorker' in navigator)) return;
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription();
+  if(!sub){ toast('⚠️ 请先开启通知'); return; }
+  // Self-push via service worker direct showNotification
+  reg.showNotification(t('notifTestTitle'), {
+    body: t('notifTestBody'),
+    icon: 'logo_small.png',
+    badge: 'logo_small.png',
+    vibrate: [200,100,200],
+    tag: 'le-test'
+  });
+  toast('📤 测试推送已发送！');
+}
+
+// Listen for push navigation from service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', event => {
+    if(event.data && event.data.type === 'PUSH_NAVIGATE'){
+      if(event.data.url && event.data.url !== './'){
+        // Navigate to target panel if URL contains a hash
+        const hash = event.data.url.split('#')[1];
+        if(hash) switchTab(hash);
+      }
+    }
+  });
+}
+
+// Check state on load
+window.addEventListener('load', () => {
+  setTimeout(checkPushState, 2000); // Wait for SW to be ready
+});
+
 </script>
 </body>
 </html>
