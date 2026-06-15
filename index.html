@@ -2434,9 +2434,20 @@ function renderDirectRequests(){
         LE ${r.response.leRate.toFixed(1)}% ($${fmt(r.response.duty||0)}) | Broker ${fmt(r.response.broker||0)}<br>
         🔥 Total: <strong style="color:#2e7d32;font-size:15px">${fmt(r.response.total)}</strong>
         ${r.response.note?`<br>📝 ${r.response.note}`:''}
-        ${roleCan('submit_cost')?`<div style="margin-top:8px"><button class="btn btn-gold btn-sm" onclick="event.stopPropagation();confirmDeal('${r.id}','direct')" style="width:100%">🎯 ${t('confirmDealBtn')}</button><p style="color:#999;font-size:11px;margin-top:4px">${t('confirmDealHint')}</p></div>`:''}
+        ${roleCan('submit_cost')?`<div style="margin-top:8px">
+          <button class="btn btn-gold btn-sm" onclick="event.stopPropagation();confirmDeal('${r.id}','direct')" style="width:100%">🎯 ${t('confirmDealBtn')}</button>
+          <p style="color:#999;font-size:11px;margin-top:4px">${t('confirmDealHint')}</p>
+          <hr style="margin:8px 0;border-color:#e0e0e0">
+          <button class="btn btn-sm" style="background:#0D2B5E;color:#fff;width:100%" onclick="event.stopPropagation();exportDirectPDF('${r.id}','responded')">📄 导出报价单</button>
+        </div>`:`
+        <div style="margin-top:8px">
+          <button class="btn btn-sm" style="background:#0D2B5E;color:#fff;width:100%" onclick="event.stopPropagation();exportDirectPDF('${r.id}','responded')">📄 导出报价单</button>
+        </div>`}
       </div>`:isConfirmed?`<div style="background:#e8f5e9;padding:10px;margin-top:8px;border-radius:6px;font-size:13px">
         <strong>🎯 ${t('confirmedLabel')}:</strong> ${fmt(r.response?.total||0)}
+        <div style="margin-top:8px">
+          <button class="btn btn-sm" style="background:#0D2B5E;color:#fff;width:100%" onclick="event.stopPropagation();exportDirectPDF('${r.id}','confirmed')">📄 导出报价单</button>
+        </div>
       </div>`:`${roleCan('respond_quote')?`<button class="btn btn-gold btn-sm" style="margin-top:8px;width:100%" onclick="event.stopPropagation();openDirectRespond('${r.id}')">📤 回传报价</button>`:''}`}
     </div>`;
   }).join('');
@@ -3038,6 +3049,73 @@ function exportQuotePDF(quoteId, status){
   if(!w){ 
     const a = document.createElement('a');
     a.href = url; a.download = `LE报价单_${q.hs}_${q.name}.html`; a.click();
+  }
+  toast('📄 报价单已生成 — 可直接打印为 PDF');
+}
+
+function exportDirectPDF(directId, status){
+  const r = directRequests.find(d=>d.id===directId);
+  if(!r||!r.response){ toast('报价未找到或无回传数据'); return; }
+  const fmt=(n)=>'$'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
+  const logoUrl = 'https://qqsteven.github.io/le-quote-system/logo_small.png';
+  const now = new Date().toLocaleString('zh-CN');
+  const stampText = status==='confirmed'?'✅ 已确认成交':'✅ 已回传 · 待成交';
+  const stampColor = status==='confirmed'?'#28a745':'#f0ad4e';
+  const items = `
+    <tr><td>商品 HS 编码</td><td>${r.hs} ${r.name}</td></tr>
+    <tr><td>客户公司</td><td>${r.client||'—'}</td></tr>
+    <tr><td>EXW 出厂价</td><td>${fmt(r.exw)}</td></tr>
+    <tr style="background:#f0f4ff"><td><strong>🔥 LE 优化关税</strong></td><td>${fmt(r.response.duty||0)} (${(r.response.leRate||0).toFixed(1)}%)</td></tr>
+    <tr><td>报关行费用</td><td>${fmt(r.response.broker||0)}</td></tr>
+    <tr style="background:#fff8e1"><td><strong>📋 客户应付总额</strong></td><td><strong style="color:#0D2B5E;font-size:20px">${fmt(r.response.total||0)}</strong></td></tr>`;
+  const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>LE 报价单 - ${r.hs} ${r.name}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#fff;color:#1a1a2e;padding:40px;max-width:800px;margin:0 auto}
+  .header{display:flex;align-items:center;gap:16px;border-bottom:3px solid #0D2B5E;padding-bottom:20px;margin-bottom:24px}
+  .header img{width:60px;height:60px;border-radius:12px}
+  .header h1{font-size:22px;color:#0D2B5E;margin:0}.header .sub{font-size:12px;color:#666}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;font-size:13px}
+  .info-item{background:#f8f9fd;padding:10px 14px;border-radius:8px}
+  .info-item .label{color:#888;font-size:11px;margin-bottom:4px}
+  .info-item .value{font-weight:600;color:#1a1a2e}
+  table{width:100%;border-collapse:collapse;margin:16px 0}
+  th{background:linear-gradient(135deg,#0D2B5E,#154080);color:#fff;padding:12px 14px;text-align:left;font-size:12px;font-weight:600}
+  td{padding:10px 14px;border-bottom:1px solid #f0f2f5;font-size:13px}
+  .footer{text-align:center;color:#999;font-size:11px;margin-top:30px;padding-top:16px;border-top:1px solid #eee}
+  .stamp{text-align:right;margin-top:20px;color:#0D2B5E;font-weight:700;font-size:14px}
+  @media print{body{padding:20px}}
+</style></head>
+<body>
+<div class="header">
+  <img src="${logoUrl}" alt="LE">
+  <div><h1>LE Logistics</h1><div class="sub">乾翔衍庆物流科技 · 中美关税优化专家</div></div>
+</div>
+<h2 style="font-size:18px;color:#0D2B5E;margin-bottom:16px">📋 直接报价 — 报价单</h2>
+<div class="info-grid">
+  <div class="info-item"><div class="label">报价编号</div><div class="value">${r.id}</div></div>
+  <div class="info-item"><div class="label">报价日期</div><div class="value">${now}</div></div>
+  <div class="info-item"><div class="label">HS 编码</div><div class="value">${r.hs}</div></div>
+  <div class="info-item"><div class="label">商品名称</div><div class="value">${r.name}</div></div>
+</div>
+<table>${items}</table>
+${r.response.note?`<div style="padding:12px;background:#f8f9fd;border-radius:8px;margin:16px 0;font-size:13px"><strong>📝 备注:</strong> ${r.response.note}</div>`:''}
+<div class="stamp" style="color:${stampColor}">${stampText}</div>
+<div class="footer">
+  LE Logistics · 四川乾翔衍庆物流科技<br>
+  本报价单为LE关税优化方案，实际税率为海关最终核定为准<br>
+  生成时间: ${now}
+</div>
+</body></html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url, '_blank');
+  if(!w){ 
+    const a = document.createElement('a');
+    a.href = url; a.download = `LE报价单_${r.hs}_${r.name}.html`; a.click();
   }
   toast('📄 报价单已生成 — 可直接打印为 PDF');
 }
