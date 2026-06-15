@@ -452,6 +452,16 @@ select::-ms-expand { background: white; }
     </div>
     <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px" data-i18n="notifHint">开启后，报价审批状态变化会实时推送</div>
   </div>
+  <!-- Bulletin Board -->
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span data-i18n="bulletinTitle">📢 公告板</span>
+      <button class="btn btn-sm" style="background:var(--gold);color:#0D2B5E;font-weight:600;padding:5px 14px;font-size:12px" onclick="openBulletinModal()" data-i18n="bulletinPost">+ 发布</button>
+    </div>
+    <div id="bulletinBoard" style="max-height:400px;overflow-y:auto">
+      <p style="color:rgba(255,255,255,0.4);text-align:center;padding:20px">暂无公告</p>
+    </div>
+  </div>
   <!-- Recent activity -->
   <div class="card">
     <div class="card-title" data-i18n="recentActivity">🕐 最近动态</div>
@@ -720,6 +730,19 @@ select::-ms-expand { background: white; }
   </div>
 </div>
 
+<!-- BULLETIN POST MODAL -->
+<div class="modal-overlay" id="bulletinModal"><div class="modal" style="max-width:480px">
+  <h3 data-i18n="bulletinPostTitle">📢 发布公告</h3>
+  <div class="form-row"><div class="form-group">
+    <label data-i18n="bulletinContent">内容</label>
+    <textarea id="bulletinContent" rows="4" placeholder="公告内容... （中英双方都可看到）" style="width:100%;padding:12px;border-radius:10px;border:1.5px solid #e2e6ef;font-size:14px;resize:vertical;min-height:100px"></textarea>
+  </div></div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-gold" onclick="postBulletin()" style="flex:1" data-i18n="bulletinSend">📤 发布</button>
+    <button class="btn" style="background:#eee;flex:1" onclick="document.getElementById('bulletinModal').classList.remove('show')" data-i18n="cancel">取消</button>
+  </div>
+</div></div>
+
 <!-- REGISTER/LOGIN MODAL -->
 <div class="modal-overlay" id="registerModal"><div class="modal" style="max-width:400px">
   <h3 data-i18n="registerTitle">👤 注册/登录</h3>
@@ -892,6 +915,8 @@ const I18N = {
     notifDenied:"⚠️ 通知权限被拒绝，请在浏览器设置中开启", notifNotSupported:"⚠️ 当前浏览器不支持推送通知",
     notifTestTitle:"LE 报价系统", notifTestBody:"🧪 这是一条测试推送！推送功能运行正常。",
     notifNative:"🔔 原生通知已就绪 — 审批报价状态变化会自动推送",
+    bulletinTitle:"📢 公告板", bulletinPost:"+ 发布", bulletinPostTitle:"📢 发布公告",
+    bulletinContent:"内容", bulletinSend:"📤 发布",
     tabDashboard:"📊 看板", tabClients:"👥 客户", dashboardTitle:"📊 运营看板",
     totalQuotes:"总报价数", totalRevenueLabel:"累计收入", recentActivity:"🕐 最近动态",
     confirmedLabel:"已成交", confirmDealBtn:"🎯 确认成交", confirmDealHint:"与客户达成协议后点击确认，收入计入看板统计",
@@ -964,6 +989,8 @@ const I18N = {
     notifDenied:"⚠️ Notification permission denied. Enable in browser settings.", notifNotSupported:"⚠️ Push not supported in this browser",
     notifTestTitle:"LE Quote System", notifTestBody:"🧪 Test push notification — it works!",
     notifNative:"🔔 Native notifications ready — approval changes will push automatically",
+    bulletinTitle:"📢 Bulletin", bulletinPost:"+ Post", bulletinPostTitle:"📢 New Post",
+    bulletinContent:"Content", bulletinSend:"📤 Post",
     tabDashboard:"📊 Dashboard", tabClients:"👥 Clients", dashboardTitle:"📊 Operations Dashboard",
     totalQuotes:"Total Quotes", totalRevenueLabel:"Total Revenue", recentActivity:"🕐 Recent Activity",
     confirmedLabel:"Closed", confirmDealBtn:"🎯 Confirm Deal", confirmDealHint:"Click after reaching agreement with client. Revenue counts toward dashboard.",
@@ -1236,6 +1263,8 @@ function renderDashboard(){
     <div class="summary-card"><div class="label">💰 ${t('totalRevenueLabel')}</div><div class="value highlight">${fmt(s.totalRevenue||0)}</div></div>
     <div class="summary-card"><div class="label">👥 ${t('tabClients')}</div><div class="value">${s.clients}</div></div>
   `;
+  // Bulletin board
+  renderBulletins();
   // Recent activity
   const recent = dt.slice(0, 6);
   if(!recent.length){
@@ -1258,6 +1287,57 @@ function renderDashboard(){
       </div>
     </div>
   `).join('');
+}
+
+// ========== BULLETIN BOARD ==========
+let bulletinPosts = JSON.parse(localStorage.getItem('le_posts')||'[]');
+
+function openBulletinModal(){
+  if(!currentUser){ toast('请先登录'); return; }
+  document.getElementById('bulletinContent').value = '';
+  document.getElementById('bulletinModal').classList.add('show');
+}
+
+function postBulletin(){
+  const content = document.getElementById('bulletinContent').value.trim();
+  if(!content){ toast('请输入公告内容'); return; }
+  if(!currentUser){ toast('请先登录'); return; }
+  const post = {
+    id: 'BP-'+Date.now().toString(36).toUpperCase(),
+    content, author: currentUser.name,
+    role: currentUser.role,
+    createdAt: new Date().toISOString()
+  };
+  bulletinPosts.unshift(post);
+  if(bulletinPosts.length > 50) bulletinPosts = bulletinPosts.slice(0, 50); // keep last 50
+  localStorage.setItem('le_posts', JSON.stringify(bulletinPosts));
+  document.getElementById('bulletinModal').classList.remove('show');
+  toast('📢 公告已发布');
+  renderBulletins();
+  sendLocalPush('📢 新公告', `${currentUser.name}: ${content.slice(0, 80)}${content.length>80?'...':''}`, 'dashboard');
+}
+
+function renderBulletins(){
+  const el = document.getElementById('bulletinBoard');
+  if(!el) return;
+  if(!bulletinPosts.length){
+    el.innerHTML = '<p style="color:rgba(255,255,255,0.4);text-align:center;padding:20px">暂无公告</p>';
+    return;
+  }
+  const roleIcon = { admin:'🛡️', us:'🇺🇸', cn:'🇨🇳' };
+  const roleLabel = { admin:'管理员', us:'美方', cn:'中方' };
+  el.innerHTML = bulletinPosts.slice(0, 20).map(p=>{
+    const d = new Date(p.createdAt);
+    const time = d.toLocaleString('zh-CN', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `
+    <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-weight:600;font-size:13px">${roleIcon[p.role]||''} ${p.author}</span>
+        <span style="font-size:10px;color:rgba(255,255,255,0.3)">${roleLabel[p.role]||p.role} · ${time}</span>
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.6;white-space:pre-wrap">${p.content}</div>
+    </div>`;
+  }).join('');
 }
 
 // ========== CLIENTS ==========
