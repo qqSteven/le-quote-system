@@ -152,10 +152,11 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> {
                 try {
                     // Strip data:xxx;base64, prefix if present
-                    if (base64Data.contains(",")) {
-                        base64Data = base64Data.substring(base64Data.indexOf(",") + 1);
+                    String cleanData = base64Data;
+                    if (cleanData.contains(",")) {
+                        cleanData = cleanData.substring(cleanData.indexOf(",") + 1);
                     }
-                    byte[] bytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT);
+                    byte[] bytes = android.util.Base64.decode(cleanData, android.util.Base64.DEFAULT);
                     
                     java.io.File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                     if (!dir.exists()) dir.mkdirs();
