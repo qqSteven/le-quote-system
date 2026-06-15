@@ -408,6 +408,7 @@ select::-ms-expand { background: white; }
     <span class="header-title"><span class="gold">LE</span> <span data-i18n="appTitle">报价系统</span></span>
   </div>
   <div style="display:flex;align-items:center;gap:10px" id="headerRight">
+    <span id="userInfo" style="font-size:11px;color:rgba(255,255,255,0.7);cursor:pointer" onclick="document.getElementById('registerModal').classList.add('show')" title="点击切换账号" data-i18n="clickToRegister">👤 点击注册/登录</span>
     <span class="role-selector">测试角色:
     <select id="roleSelect" onchange="switchRole()">
       <option value="cn">🇨🇳 中国团队</option>
@@ -985,7 +986,91 @@ function roleApplyUI(){
   if(uploadBtn) uploadBtn.style.display = roleCan('upload_files') ? '' : 'none';
   const directForm = document.getElementById('directSubmitForm');
   if(directForm) directForm.style.display = roleCan('submit_cost') ? '' : 'none';
+  // Update header user info
+  updateUserDisplay();
 }
+function updateUserDisplay(){
+  const el = document.getElementById('userInfo');
+  if(!el) return;
+  if(currentUser){
+    const roleLabel = currentUser.role==='us'?'🇺🇸':'🇨🇳';
+    el.innerHTML = `${roleLabel} ${currentUser.email} <span style="font-size:10px;opacity:0.5">(点击切换)</span>`;
+    el.onclick = function(){ document.getElementById('registerModal').classList.add('show'); };
+  } else {
+    el.innerHTML = '👤 点击注册/登录';
+    el.onclick = function(){ document.getElementById('registerModal').classList.add('show'); };
+  }
+}
+
+// ========== REGISTERED USERS + APPROVER MANAGEMENT ==========
+let registeredUsers = JSON.parse(localStorage.getItem('le_users')||'[]');
+let currentUser = JSON.parse(localStorage.getItem('le_current_user')||'null');
+
+function saveUsers(){ localStorage.setItem('le_users', JSON.stringify(registeredUsers)); }
+function saveCurrentUser(){ localStorage.setItem('le_current_user', JSON.stringify(currentUser)); }
+
+function doRegister(){
+  const email = document.getElementById('regEmail').value.trim();
+  const pwd = document.getElementById('regPassword').value.trim();
+  const role = document.getElementById('regRole').value;
+  if(!email||!pwd){ toast('请填写邮箱和密码'); return; }
+  const exists = registeredUsers.find(u=>u.email===email);
+  if(exists){ toast('该邮箱已注册，请直接登录'); return; }
+  const user = { id:'U-'+Date.now().toString(36).toUpperCase(), email, role, createdAt:new Date().toISOString() };
+  registeredUsers.push(user);
+  saveUsers();
+  currentUser = user;
+  saveCurrentUser();
+  document.getElementById('registerModal').classList.remove('show');
+  if(role==='us') currentRole='us'; else currentRole='cn';
+  document.getElementById('roleSelect').value = currentRole;
+  roleApplyUI();
+  refreshApproverSelect();
+  toast(`✅ 注册成功 — ${email} (${role==='us'?'🇺🇸 美方团队':'🇨🇳 中方团队'})`);
+}
+function quickLogin(){
+  // Quick demo: login as US team
+  const email = document.getElementById('regEmail').value.trim()||'demo@us.le-logistics.com';
+  let user = registeredUsers.find(u=>u.email===email);
+  if(!user){
+    user = { id:'U-DEMO', email, role:'us', createdAt:new Date().toISOString() };
+    registeredUsers.push(user);
+    saveUsers();
+  }
+  currentUser = user;
+  saveCurrentUser();
+  document.getElementById('registerModal').classList.remove('show');
+  currentRole = user.role;
+  document.getElementById('roleSelect').value = currentRole;
+  roleApplyUI();
+  refreshApproverSelect();
+  if(currentRole==='us') switchTab('approval');
+  toast(`🔑 已登录 — ${email}`);
+}
+function logoutUser(){
+  currentUser = null;
+  saveCurrentUser();
+  currentRole = 'cn';
+  document.getElementById('roleSelect').value = 'cn';
+  roleApplyUI();
+  switchTab('tariff');
+  toast('👋 已退出登录');
+}
+
+// Dynamically populate approver dropdown from registered US team members
+function refreshApproverSelect(){
+  const sel = document.getElementById('approverSelect');
+  if(!sel) return;
+  const usMembers = registeredUsers.filter(u=>u.role==='us');
+  // Always keep hardcoded defaults if no registered US users
+  if(!usMembers.length){
+    sel.innerHTML = '<option value="Tyson">Tyson</option><option value="Justin">Justin</option>';
+    return;
+  }
+  sel.innerHTML = usMembers.map(u=>`<option value="${u.email}">${u.email}</option>`).join('');
+}
+// Initialize on load
+refreshApproverSelect();
 
 function switchTab(name) {
   ['dashboard','tariff','direct','approval','clients','files','history','ddp'].forEach((n,i)=>{
@@ -1290,6 +1375,7 @@ function openSubmitModal(type) {
 
   pendingSubmit = { type, hs, cargoVal, autoLeRate };
   document.getElementById('submitEditFields').innerHTML = fields;
+  refreshApproverSelect(); // Refresh US team member list
   document.getElementById('submitModal').classList.add('show');
 }
 
@@ -1489,7 +1575,8 @@ function actOnApproval(id, newStatus) {
   const q = approvalQueue.find(a=>a.id===id);
   if(!q) return;
   if(newStatus==='rejected'){
-    // Open counter-offer modal — must fill acceptable numbers
+    // Close approval detail FIRST, then open counter-offer modal
+    document.getElementById('approvalDetailModal').classList.remove('show');
     openCounterOfferModal(q);
     return;
   }
