@@ -1,0 +1,59 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.le.quote"
+4    android:versionCode="2"
+5    android:versionName="1.1" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:3:5-67
+11-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:3:22-64
+12    <uses-permission android:name="android.permission.VIBRATE" />
+12-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:4:5-66
+12-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:4:22-63
+13
+14    <!-- Notification permission for Android 13+ (required at runtime) -->
+15    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+15-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:7:5-77
+15-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:7:22-74
+16
+17    <application
+17-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:9:5-25:19
+18        android:allowBackup="true"
+18-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:9-35
+19        android:extractNativeLibs="false"
+20        android:icon="@mipmap/ic_launcher"
+20-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:11:9-43
+21        android:label="LE报价"
+21-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:12:9-29
+22        android:supportsRtl="true"
+22-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:13:9-35
+23        android:theme="@style/Theme.LEQuote"
+23-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:14:9-45
+24        android:usesCleartextTraffic="true" >
+24-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:15:9-44
+25        <activity
+25-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:16:9-24:20
+26            android:name="com.le.quote.MainActivity"
+26-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:17:13-41
+27            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+27-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:18:13-87
+28            android:exported="true" >
+28-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:19:13-36
+29            <intent-filter>
+29-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:20:13-23:29
+30                <action android:name="android.intent.action.MAIN" />
+30-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:21:17-69
+30-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:21:25-66
+31
+32                <category android:name="android.intent.category.LAUNCHER" />
+32-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:17-77
+32-->F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:27-74
+33            </intent-filter>
+34        </activity>
+35    </application>
+36
+37</manifest>

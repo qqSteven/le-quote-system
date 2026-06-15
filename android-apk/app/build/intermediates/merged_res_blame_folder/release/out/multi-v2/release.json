@@ -1,0 +1,38 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.le.quote.app-merged_res-4:/values_values.arsc.flat",
+            "map": [
+                {
+                    "source": "F:\\工作文件\\Claw\\le-quote-system\\android-apk\\app\\src\\main\\res\\values\\strings.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "41",
+                        "endOffsets": "92"
+                    }
+                },
+                {
+                    "source": "F:\\工作文件\\Claw\\le-quote-system\\android-apk\\app\\src\\main\\res\\values\\styles.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "9",
+                        "endColumns": "12",
+                        "endOffsets": "503"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "97",
+                        "endLines": "10",
+                        "endColumns": "12",
+                        "endOffsets": "545"
+                    }
+                }
+            ]
+        }
+    ]
+}

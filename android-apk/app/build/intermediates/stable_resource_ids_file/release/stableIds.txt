@@ -1,0 +1,3 @@
+com.le.quote:style/Theme.LEQuote = 0x7f030000
+com.le.quote:string/app_name = 0x7f020000
+com.le.quote:mipmap/ic_launcher = 0x7f010000

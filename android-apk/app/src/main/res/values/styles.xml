@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.LEQuote" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#0D2B5E</item>
+        <item name="android:navigationBarColor">#0D2B5E</item>
+        <item name="android:windowBackground">#0D2B5E</item>
+        <item name="android:colorPrimary">#0D2B5E</item>
+        <item name="android:colorPrimaryDark">#071830</item>
+        <item name="android:colorAccent">#C8A45C</item>
+    </style>
+</resources>

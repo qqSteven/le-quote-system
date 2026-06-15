@@ -1,0 +1,7 @@
+com.le.quote.app-pngs-0 F:\工作文件\Claw\le-quote-system\android-apk\app\build\generated\res\pngs\release
+com.le.quote.app-resValues-1 F:\工作文件\Claw\le-quote-system\android-apk\app\build\generated\res\resValues\release
+com.le.quote.app-packageReleaseResources-2 F:\工作文件\Claw\le-quote-system\android-apk\app\build\intermediates\incremental\release\packageReleaseResources\merged.dir
+com.le.quote.app-packageReleaseResources-3 F:\工作文件\Claw\le-quote-system\android-apk\app\build\intermediates\incremental\release\packageReleaseResources\stripped.dir
+com.le.quote.app-merged_res-4 F:\工作文件\Claw\le-quote-system\android-apk\app\build\intermediates\merged_res\release
+com.le.quote.app-main-5 F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\res
+com.le.quote.app-release-6 F:\工作文件\Claw\le-quote-system\android-apk\app\src\release\res

@@ -4,15 +4,20 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.DownloadManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
 import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
@@ -51,6 +56,28 @@ public class MainActivity extends Activity {
 
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
+
+        // ** Handle file downloads (CSV/PDF exports) **
+        webView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+            request.setMimeType(mimeType);
+            request.addRequestHeader("User-Agent", userAgent);
+            String fileName = "LE_export_" + System.currentTimeMillis();
+            try {
+                String cd = contentDisposition;
+                if(cd != null && cd.contains("filename=")) {
+                    fileName = cd.split("filename=\"?")[1].replace("\"", "");
+                }
+            } catch(Exception e) {}
+            request.setTitle(fileName);
+            request.setDescription("LE 报价系统导出文件");
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+            DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+            if(dm != null) dm.enqueue(request);
+            Toast.makeText(this, "📥 开始下载: " + fileName, Toast.LENGTH_SHORT).show();
+        });
+
         webView.loadUrl(HOME_URL);
     }
 
