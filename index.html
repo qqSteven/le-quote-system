@@ -2488,5 +2488,15 @@ window.addEventListener('load', () => {
 });
 
 </script>
+<div id="versionFooter" style="text-align:center;font-size:10px;color:rgba(255,255,255,0.2);padding:12px 0 20px;margin-top:8px">
+  LE Quote v1.1 · <span id="verTime"></span>
+</div>
+<script>
+(function(){
+  const d=new Date();
+  document.getElementById('verTime').textContent=
+    d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+})();
+</script>
 </body>
 </html>
