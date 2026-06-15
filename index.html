@@ -1083,11 +1083,10 @@ function updateUserDisplay(){
 // ========== REGISTERED USERS + ADMIN SYSTEM ==========
 let registeredUsers = (()=>{
   let users = JSON.parse(localStorage.getItem('le_users')||'[]');
-  // ** Migration: old email-keyed users → name-keyed, add password fallback **
+  // ** Migration: old email-keyed users → name-keyed **
   let migrated = false;
   users = users.map(u=>{
     if(u.email && !u.name){ u.name = u.email; delete u.email; migrated = true; }
-    if(!u.password){ u.password = 'qxyq01'; migrated = true; } // fallback for old users
     return u;
   });
   if(users.length===0){
@@ -1137,7 +1136,8 @@ function doLogin(){
   if(!user){ toast('❌ 账号不存在，请先注册'); return; }
   if(user.status==='pending'){ toast('⏳ 账号等待管理员审批中'); return; }
   if(user.status==='rejected'){ toast('❌ 账号已被管理员拒绝'); return; }
-  if(!user.password || pwd!==user.password){ toast('❌ 密码错误'); return; }
+  // Old users without password field — accept any password (pre-password era)
+  if(user.password && pwd!==user.password){ toast('❌ 密码错误'); return; }
   currentUser = user;
   saveCurrentUser();
   document.getElementById('registerModal').classList.remove('show');
