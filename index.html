@@ -413,13 +413,12 @@ select::-ms-expand { background: white; }
     <img src="logo_small.png" alt="乾翔" class="header-logo">
     <span class="header-title"><span class="gold">LE</span> <span data-i18n="appTitle">报价系统</span></span>
   </div>
-  <div style="display:flex;align-items:center;gap:10px" id="headerRight">
+  <div style="display:flex;align-items:center;gap:6px" id="headerRight">
     <span id="userInfo" style="font-size:11px;color:rgba(255,255,255,0.7);cursor:pointer" onclick="document.getElementById('registerModal').classList.add('show')" title="点击切换账号" data-i18n="clickToRegister">👤 点击注册/登录</span>
-    <span class="role-selector">测试角色:
-    <select id="roleSelect" onchange="switchRole()">
-      <option value="cn">🇨🇳 中国团队</option>
-      <option value="us">🇺🇸 美国团队</option>
-    </select></span>
+    <select id="roleSelect" onchange="switchRole()" style="font-size:11px;padding:3px 5px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:6px;cursor:pointer">
+      <option value="cn">🇨🇳</option>
+      <option value="us">🇺🇸</option>
+    </select>
     <button class="lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
   </div>
 </div>
