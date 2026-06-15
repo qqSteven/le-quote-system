@@ -23,7 +23,7 @@ import java.io.FileOutputStream;
 import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
-    private static final String HOME_URL = "https://qqsteven.github.io/le-quote-system/";
+    private static final String HOME_URL = "https://cdn.jsdelivr.net/gh/qqSteven/le-quote-system@main/index.html";
     private static final String CHANNEL_ID = "le_quote_notifications";
     private static final int NOTIF_PERMISSION_REQUEST = 1001;
     private WebView webView;
