@@ -723,7 +723,7 @@ select::-ms-expand { background: white; }
 <!-- REGISTER/LOGIN MODAL -->
 <div class="modal-overlay" id="registerModal"><div class="modal" style="max-width:400px">
   <h3 data-i18n="registerTitle">👤 注册/登录</h3>
-  <p style="color:#999;font-size:12px;margin-bottom:12px">管理员审核后激活。管理员: qxyq01 / qxyq01</p>
+  <p style="color:#999;font-size:12px;margin-bottom:12px">注册后需管理员审批方可登录使用</p>
   <div class="form-row"><div class="form-group">
     <label data-i18n="emailLabel">邮箱</label>
     <input id="regEmail" placeholder="user@le-logistics.com">
@@ -1028,6 +1028,8 @@ popHsDropdowns();
 // ========== ROLE (测试模式 — 自由切换，后续接Supabase Auth锁定) ==========
 let currentRole = 'cn';
 function switchRole(){
+  // Only admin can manually switch roles for testing
+  if(!isAdmin()){ return; }
   currentRole = document.getElementById('roleSelect').value;
   roleApplyUI();
   switchTab(currentRole==='us'?'approval':'tariff');
@@ -1060,14 +1062,21 @@ function roleApplyUI(){
 }
 function updateUserDisplay(){
   const el = document.getElementById('userInfo');
+  const roleSel = document.getElementById('roleSelect');
   if(!el) return;
   if(currentUser){
-    const roleLabel = currentUser.role==='us'?'🇺🇸':'🇨🇳';
-    el.innerHTML = `${roleLabel} ${currentUser.email} <span style="font-size:10px;opacity:0.5">(点击切换)</span>`;
+    const roleLabel = currentUser.role==='admin'?'🛡️':currentUser.role==='us'?'🇺🇸':'🇨🇳';
+    const roleText = currentUser.role==='admin'?'管理员':currentUser.role==='us'?'美方团队':'中方团队';
+    el.innerHTML = `${roleLabel} ${roleText} — ${currentUser.email}`;
+    el.style.cursor = 'pointer';
     el.onclick = function(){ document.getElementById('registerModal').classList.add('show'); };
+    // ** Hide role selector when logged in — role is tied to account **
+    // Admin keeps selector for testing both sides
+    if(roleSel) roleSel.style.display = currentUser.role==='admin' ? '' : 'none';
   } else {
     el.innerHTML = '👤 点击注册/登录';
     el.onclick = function(){ document.getElementById('registerModal').classList.add('show'); };
+    if(roleSel) roleSel.style.display = ''; // Show selector for demo/testing
   }
 }
 
