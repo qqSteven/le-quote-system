@@ -1067,6 +1067,7 @@ const I18N = {
     commentPlaceholder:"写评论...", commentSend:"发送",
     pdfExport:"📄 导出 PDF", fileUploadSuccess:"上传成功",
     exportCSV:"📥 导出 CSV",
+    exportQuote:"📄 导出报价单", exportQuoteTitle:"LE 报价单",
     tabDashboard:"📊 看板", tabClients:"👥 客户", dashboardTitle:"📊 运营看板",
     totalQuotes:"总报价数", totalRevenueLabel:"累计收入", recentActivity:"🕐 最近动态",
     confirmedLabel:"已成交", confirmDealBtn:"🎯 确认成交", confirmDealHint:"与客户达成协议后点击确认，收入计入看板统计",
@@ -1147,6 +1148,7 @@ const I18N = {
     commentPlaceholder:"Write comment...", commentSend:"Send",
     pdfExport:"📄 Export PDF", fileUploadSuccess:"Uploaded",
     exportCSV:"📥 CSV Export",
+    exportQuote:"📄 Export Quote", exportQuoteTitle:"LE Quote Sheet",
     tabDashboard:"📊 Dashboard", tabClients:"👥 Clients", dashboardTitle:"📊 Operations Dashboard",
     totalQuotes:"Total Quotes", totalRevenueLabel:"Total Revenue", recentActivity:"🕐 Recent Activity",
     confirmedLabel:"Closed", confirmDealBtn:"🎯 Confirm Deal", confirmDealHint:"Click after reaching agreement with client. Revenue counts toward dashboard.",
@@ -2047,16 +2049,22 @@ function openApprovalDetail(id) {
   document.getElementById('approvalDetailContent').innerHTML = `
     <h3>${t('quoteDetail')}: ${q.hs} ${q.name}</h3>
     <table class="comp-table"><tbody>${detailRows}</tbody></table>
-    ${q.status==='pending_review'?`
+    ${q.status==='pending_review' && roleCan('approve_quote') ?`
     <div class="approval-actions">
       <button class="btn btn-primary" onclick="actOnApproval('${q.id}','approved')">🤝 ${t('agreeBtn')}</button>
       <button class="btn" style="background:#dc3545;color:white" onclick="actOnApproval('${q.id}','rejected')">✋ ${t('disagreeBtn')}</button>
       <p style="color:#999;font-size:12px;margin-top:8px">${t('approvalHint')}</p>
-    </div>`:(q.status==='approved'&&roleCan('submit_quote')?`
+    </div>`:q.status==='pending_review'?`
+    <p style="color:#f0ad4e;text-align:center;margin-top:16px">⏳ 等待美方团队审批...</p>
+    `:(q.status==='approved'&&roleCan('submit_quote')?`
     <div class="approval-actions">
       <button class="btn btn-gold" onclick="confirmDeal('${q.id}','quote')" style="width:100%">🎯 ${t('confirmDealBtn')}</button>
       <p style="color:#999;font-size:12px;margin-top:8px;text-align:center">${t('confirmDealHint')}</p>
-    </div>`:`<p style="color:#999;margin-top:16px;text-align:center">${q.status==='confirmed'?t('confirmedLabel'):q.status==='approved'?t('agreed'):t('disagreed')}</p>`)}
+    </div>`:q.status==='confirmed'?`
+    <div class="approval-actions">
+      <p style="color:#28a745;text-align:center;font-weight:600;margin-bottom:12px">✅ ${t('confirmedLabel')}</p>
+      <button class="btn btn-gold" onclick="exportQuotePDF('${q.id}')">📄 导出报价单</button>
+    </div>`:`<p style="color:#999;margin-top:16px;text-align:center">${q.status==='approved'?t('agreed'):t('disagreed')}</p>`)}
   `;
   document.getElementById('approvalDetailModal').classList.add('show');
 }
@@ -2937,6 +2945,92 @@ if('ontouchstart' in window){
   }, {passive:true});
   document.addEventListener('touchend', ()=>clearTimeout(longPressTimer));
   document.addEventListener('touchmove', ()=>clearTimeout(longPressTimer));
+}
+
+// ========== EXPORT QUOTE PDF / EXCEL ==========
+function exportQuotePDF(quoteId){
+  const q = approvalQueue.find(a=>a.id===quoteId);
+  if(!q){ toast('报价未找到'); return; }
+  const fmt=(n)=>'$'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
+  const logoUrl = 'https://qqsteven.github.io/le-quote-system/logo_small.png';
+  const now = new Date().toLocaleString('zh-CN');
+  const typeLabel = q.type==='tariff'?'关税优化报价':'DDP到门报价';
+  
+  let items = '';
+  if(q.type==='tariff'){
+    const origRate = (q.mfn||0)+(q.s301||0)+(q.s122||0);
+    const origDuty = (q.cargoValue||0)*origRate/100;
+    items = `
+      <tr><td>原始综合税率</td><td>MFN ${q.mfn||0}% + S.301 ${q.s301||0}% + S.122 ${q.s122||0}% = ${origRate.toFixed(1)}%</td></tr>
+      <tr><td>原始关税金额</td><td>${fmt(origDuty)}</td></tr>
+      <tr><td>报关行费用</td><td>${fmt(q.brokerFee||350)}</td></tr>
+      <tr style="background:#f0f4ff"><td><strong>🔥 LE 优化后税率</strong></td><td><strong style="color:#0D2B5E;font-size:18px">${(q.leRate||0).toFixed(1)}%</strong></td></tr>
+      <tr style="background:#f0f4ff"><td>LE 优化后关税</td><td>${fmt(q.leDuty||0)}</td></tr>
+      <tr style="background:#e8f5e9"><td><strong>💰 节省金额</strong></td><td><strong style="color:#2e7d32;font-size:16px">${fmt((origDuty-(q.leDuty||0)))}</strong></td></tr>
+      <tr style="background:#fff8e1"><td><strong>📋 客户应付总额</strong></td><td><strong style="color:#0D2B5E;font-size:20px">${fmt(q.total||0)}</strong></td></tr>`;
+  } else {
+    items = `
+      <tr><td>EXW 出厂价</td><td>${fmt(q.exw||0)}</td></tr>
+      <tr><td>中国物流</td><td>${fmt(q.cnLog||0)}</td></tr>
+      <tr><td>海运费用</td><td>${fmt(q.sea||0)}</td></tr>
+      <tr><td>美国陆运</td><td>${fmt(q.usLog||0)}</td></tr>
+      <tr><td>保险费用</td><td>${fmt(q.insurance||0)}</td></tr>
+      <tr style="background:#f0f4ff"><td><strong>🔥 LE 优化关税</strong></td><td>${fmt(q.leDuty||0)} (${(q.leRate||0).toFixed(1)}%)</td></tr>
+      <tr><td>报关行费用</td><td>${fmt(q.brokerFee||350)}</td></tr>
+      <tr style="background:#fff8e1"><td><strong>📋 DDP 到门总价</strong></td><td><strong style="color:#0D2B5E;font-size:20px">${fmt(q.total||0)}</strong></td></tr>`;
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>LE 报价单 - ${q.hs} ${q.name}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#fff;color:#1a1a2e;padding:40px;max-width:800px;margin:0 auto}
+  .header{display:flex;align-items:center;gap:16px;border-bottom:3px solid #0D2B5E;padding-bottom:20px;margin-bottom:24px}
+  .header img{width:60px;height:60px;border-radius:12px}
+  .header h1{font-size:22px;color:#0D2B5E;margin:0}.header .sub{font-size:12px;color:#666}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;font-size:13px}
+  .info-item{background:#f8f9fd;padding:10px 14px;border-radius:8px}
+  .info-item .label{color:#888;font-size:11px;margin-bottom:4px}
+  .info-item .value{font-weight:600;color:#1a1a2e}
+  table{width:100%;border-collapse:collapse;margin:16px 0}
+  th{background:linear-gradient(135deg,#0D2B5E,#154080);color:#fff;padding:12px 14px;text-align:left;font-size:12px;font-weight:600}
+  td{padding:10px 14px;border-bottom:1px solid #f0f2f5;font-size:13px}
+  .footer{text-align:center;color:#999;font-size:11px;margin-top:30px;padding-top:16px;border-top:1px solid #eee}
+  .stamp{text-align:right;margin-top:20px;color:#0D2B5E;font-weight:700;font-size:14px}
+  @media print{body{padding:20px}}
+</style></head>
+<body>
+<div class="header">
+  <img src="${logoUrl}" alt="LE">
+  <div><h1>LE Logistics</h1><div class="sub">乾翔衍庆物流科技 · 中美关税优化专家</div></div>
+</div>
+<h2 style="font-size:18px;color:#0D2B5E;margin-bottom:16px">📋 ${typeLabel} — 报价单</h2>
+<div class="info-grid">
+  <div class="info-item"><div class="label">HS 编码</div><div class="value">${q.hs}</div></div>
+  <div class="info-item"><div class="label">商品名称</div><div class="value">${q.name}</div></div>
+  <div class="info-item"><div class="label">客户公司</div><div class="value">${q.companyName||'—'}</div></div>
+  <div class="info-item"><div class="label">货值</div><div class="value">${fmt(q.cargoValue||q.exw||0)}</div></div>
+  <div class="info-item"><div class="label">报价日期</div><div class="value">${now}</div></div>
+  <div class="info-item"><div class="label">报价编号</div><div class="value">${q.id}</div></div>
+</div>
+<table>${items}</table>
+<div class="stamp">✅ 已确认成交</div>
+<div class="footer">
+  LE Logistics · 四川乾翔衍庆物流科技<br>
+  本报价单为LE关税优化方案，实际税率为海关最终核定为准<br>
+  生成时间: ${now}
+</div>
+</body></html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url, '_blank');
+  if(!w){ 
+    const a = document.createElement('a');
+    a.href = url; a.download = `LE报价单_${q.hs}_${q.name}.html`; a.click();
+  }
+  toast('📄 报价单已生成 — 可直接打印为 PDF');
 }
 
 </script>
