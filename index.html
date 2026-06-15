@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LE报价">
+<meta name="theme-color" content="#0D2B5E">
+<link rel="manifest" href="manifest.json">
+<title>LE Quote System</title>
+<style>
+:root {
+  --bg-deep: #080e1a;
+  --bg-card: rgba(255,255,255,0.97);
+  --navy: #0D2B5E;
+  --navy-light: #1a3f7a;
+  --gold: #C8A45C;
+  --gold-glow: #e6c87a;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --border: rgba(255,255,255,0.08);
+  --shadow: 0 4px 24px rgba(0,0,0,0.12);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.18);
+  --radius: 14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { overflow-x: hidden; }
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg-deep);
+  background-image: 
+    radial-gradient(ellipse at 20% 0%, rgba(200,164,92,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(13,43,94,0.15) 0%, transparent 60%),
+    linear-gradient(180deg, #080e1a 0%, #0f1c38 50%, #0a1226 100%);
+  color: var(--text);
+  min-height: 100vh;
+  background-attachment: fixed;
+}
+
+/* ===== HEADER ===== */
+.header { 
+  background: linear-gradient(135deg, #0a1d3a 0%, var(--navy) 40%, #0f2a50 100%);
+  color: white; 
+  padding: 10px 14px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  border-bottom: 1px solid rgba(200,164,92,0.2);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.header-left { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.header-logo { height: 36px; width: auto; max-width: 120px; object-fit: contain; object-position: left; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(200,164,92,0.3)); }
+.header-title { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; white-space: nowrap; }
+.header-title .gold { color: var(--gold); background: linear-gradient(135deg, var(--gold), var(--gold-glow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.lang-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all .25s; backdrop-filter: blur(10px); }
+.lang-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
+.role-selector { font-size: 11px; color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; }
+.role-selector select { 
+  padding: 4px 8px; 
+  border: 1px solid rgba(255,255,255,0.2); 
+  border-radius: 16px; 
+  font-size: 11px; 
+  background: rgba(255,255,255,0.08); 
+  color: white; 
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+.role-selector select:focus { outline: none; border-color: var(--gold); }
+.role-selector select option { background: white; color: #1a1a2e; }
+select option, option { background: white !important; color: #1a1a2e !important; }
+
+/* ===== TABS ===== */
+.tabs { 
+  display: flex; 
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(200,164,92,0.12);
+  position: sticky; 
+  top: 66px; 
+  z-index: 40; 
+  overflow-x: auto;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 0 4px;
+}
+.tab { 
+  flex: 1; text-align: center; padding: 14px 6px; font-size: 13px; font-weight: 600; 
+  color: rgba(255,255,255,0.45); cursor: pointer; 
+  border-bottom: 3px solid transparent; 
+  white-space: nowrap; 
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+  position: relative;
+}
+.tab:hover { color: rgba(255,255,255,0.7); }
+.tab.active { 
+  color: var(--gold); 
+  border-bottom-color: var(--gold);
+  text-shadow: 0 0 20px rgba(200,164,92,0.3);
+}
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 3px;
+  background: var(--gold);
+  border-radius: 3px 3px 0 0;
+  box-shadow: 0 0 12px rgba(200,164,92,0.5);
+}
+
+/* ===== PANELS ===== */
+.panel { display:none; padding: 20px; max-width: 960px; margin: 0 auto; }
+.panel > p, .panel > div > p { color: rgba(255,255,255,0.7); }
+.panel .card, .panel .approval-item, .panel .file-item, .panel .summary-card { color: var(--text); }
+.panel .card table, .panel .card td, .panel .card th, .panel .card label, .panel .card p, 
+.panel .approval-item td, .panel .approval-item p, .panel .file-item td, .panel .file-item p,
+.panel .summary-card .label, .panel .summary-card .value { color: inherit; }
+.panel .approval-value { color: var(--text-muted) !important; }
+.panel.active { display:block; animation: panelIn .35s ease-out; }
+@keyframes panelIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+
+/* ===== CARDS ===== */
+.card { 
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 24px; 
+  margin-bottom: 18px; 
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(200,164,92,0.08);
+  transition: all .3s;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.card:hover { box-shadow: var(--shadow-lg); border-color: rgba(200,164,92,0.18); }
+.card-title { 
+  font-size: 16px; font-weight: 700; color: var(--navy); 
+  margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+}
+.card-title::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--gold), var(--navy));
+  border-radius: 2px;
+}
+
+/* ===== FORMS ===== */
+.form-row { display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+.form-group { flex:1; min-width:140px; }
+.form-group label { 
+  display:block; font-size:12px; color: var(--text-muted); 
+  margin-bottom:5px; font-weight:600; letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.form-group input, .form-group select { 
+  width:100%; padding: 11px 14px; 
+  border: 1.5px solid #e2e6ef; border-radius: 10px; 
+  font-size: 14px; transition: all .25s; 
+  background: white; color: var(--text);
+}
+select { background: white; color: var(--text); }
+select option, option { background: white; color: #1a1a2e; }
+select::-ms-expand { background: white; }
+.form-group input:focus, .form-group select:focus { 
+  outline: none; border-color: var(--navy); 
+  background: white;
+  box-shadow: 0 0 0 3px rgba(13,43,94,0.08);
+}
+
+/* ===== BUTTONS ===== */
+.btn { 
+  padding: 11px 22px; border-radius: 10px; font-size: 14px; 
+  font-weight: 600; cursor: pointer; border: none; 
+  transition: all .25s cubic-bezier(.4,0,.2,1);
+  position: relative; overflow: hidden;
+}
+.btn::after {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  width: 0; height: 0; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transform: translate(-50%, -50%);
+  transition: width .6s, height .6s;
+}
+.btn:active::after { width: 300px; height: 300px; }
+.btn-primary { 
+  background: linear-gradient(135deg, var(--navy), #154080); 
+  color: white; box-shadow: 0 4px 14px rgba(13,43,94,0.3); 
+}
+.btn-primary:hover { box-shadow: 0 6px 20px rgba(13,43,94,0.4); transform: translateY(-1px); }
+.btn-gold { 
+  background: linear-gradient(135deg, var(--gold), #d4af6a); 
+  color: #1a1200; 
+  box-shadow: 0 4px 14px rgba(200,164,92,0.3); 
+}
+.btn-gold:hover { box-shadow: 0 6px 20px rgba(200,164,92,0.45); transform: translateY(-1px); }
+.btn-outline { 
+  background: transparent; border: 2px solid var(--navy); 
+  color: var(--navy); 
+}
+.btn-outline:hover { background: rgba(13,43,94,0.08); }
+/* Dark bg overrides for outline buttons outside cards */
+.panel .btn-outline:not(.card .btn-outline) { border-color: var(--gold); color: var(--gold); }
+.btn-sm { padding: 7px 16px; font-size: 12px; border-radius: 8px; }
+
+/* ===== MODALS ===== */
+.modal-overlay { 
+  display:none; position:fixed; top:0; left:0; 
+  width:100%; height:100%; 
+  background: rgba(8,14,26,0.75); 
+  z-index:100; justify-content:center; align-items:center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.modal-overlay.show { display:flex; animation: fadeIn .2s ease-out; }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.modal { 
+  background: white; border-radius: 18px; padding: 28px; 
+  width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: modalIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes modalIn { from { opacity:0; transform: scale(0.92) translateY(20px); } to { opacity:1; transform: scale(1) translateY(0); } }
+.modal h3 { font-size: 18px; color: var(--navy); margin-bottom: 16px; font-weight: 700; }
+
+/* ===== TABLES ===== */
+.comp-table { 
+  width:100%; border-collapse:separate; border-spacing:0; 
+  font-size:13px; margin-top:12px; border-radius: 10px; overflow: hidden;
+  color: var(--text);
+}
+.comp-table th { 
+  background: linear-gradient(135deg, var(--navy), #154080); 
+  color: white; padding: 12px 14px; text-align:left; font-size:12px; 
+  font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+}
+.comp-table td { padding: 12px 14px; border-bottom: 1px solid #f0f2f5; color: var(--text); }
+.comp-table td strong, .comp-table td span { color: inherit; }
+.comp-table tbody tr { transition: background .2s; }
+.comp-table tbody tr:hover { background: #f8f9fd; }
+.comp-table .savings { color: #059669; font-weight:700; background: #ecfdf5 !important; }
+.comp-table .highlight-row td { background: #fffbeb !important; font-weight:700; }
+
+/* ===== BADGES ===== */
+.badge { 
+  display:inline-block; padding: 4px 12px; border-radius: 20px; 
+  font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+}
+.badge-pending { background: #FFF8E1; color: #B8860B; border: 1px solid rgba(184,134,11,0.3); }
+.badge-approved { background: #E8F5E9; color: #1B5E20; border: 1px solid rgba(27,94,32,0.2); }
+.badge-rejected { background: #FFEBEE; color: #B71C1C; border: 1px solid rgba(183,28,28,0.2); }
+
+/* ===== APPROVAL ITEMS ===== */
+.approval-item { 
+  background: var(--bg-card);
+  border-radius: 12px; 
+  padding: 18px; 
+  margin-bottom: 10px; 
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); 
+  cursor: pointer; 
+  border-left: 4px solid transparent; 
+  transition: all .2s cubic-bezier(.4,0,.2,1);
+}
+.approval-item:hover { transform: translateX(4px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.approval-item.pending { border-left-color: var(--gold); }
+.approval-item.approved { border-left-color: #059669; }
+.approval-item.rejected { border-left-color: #dc3545; }
+.approval-row { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.approval-hs { font-weight:700; color: var(--navy); font-size: 14px; }
+.approval-value { color: var(--text-muted); font-size:12px; }
+.approval-actions { display:flex; gap:8px; margin-top:16px; }
+.file-item { transition: all .2s; }
+.file-item:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+
+/* ===== TOAST ===== */
+.toast { 
+  position:fixed; bottom: 30px; left:50%; transform:translateX(-50%); 
+  background: linear-gradient(135deg, #1a1a2e, #16213e); 
+  color: white; padding: 14px 28px; border-radius: 28px; 
+  font-size: 14px; z-index:200; opacity:0; 
+  transition: opacity .3s, transform .3s; pointer-events:none;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  border: 1px solid rgba(200,164,92,0.3);
+}
+.toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+
+/* ===== RESULT SECTION ===== */
+.result-section { display:none; margin-top: 16px; }
+.result-section.show { 
+  display:block; 
+  animation: slideUp .35s ease-out;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(200,164,92,0.06);
+  overflow-x: auto; 
+  -webkit-overflow-scrolling: touch;
+}
+.result-section .comp-table { min-width: 600px; }
+@keyframes slideUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+.summary-cards { display:flex; gap:14px; margin-bottom: 18px; flex-wrap:wrap; }
+.summary-card { 
+  flex:1; min-width:150px; 
+  background: var(--bg-card);
+  border-radius: 12px; padding: 20px; text-align:center; 
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(200,164,92,0.06);
+  transition: all .3s;
+}
+.summary-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.summary-card .label { font-size:11px; color: var(--text-muted); margin-bottom:6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.summary-card .value { font-size: 24px; font-weight:700; color: var(--navy); }
+.summary-card .value.highlight { color: var(--gold); }
+.summary-card .value.green { color: #059669; }
+
+/* ===== HERO SECTION (on empty states) ===== */
+.coming-soon { text-align:center; padding: 60px 20px; }
+.coming-soon .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+@media(max-width:640px){ 
+  /* Layout */
+  .form-row { flex-direction:column; gap:8px; }
+  .form-group { min-width:100%; }
+  .modal { padding: 18px; border-radius: 14px; max-width: 95vw; }
+  .modal h3 { font-size: 16px; }
+  .panel { padding: 10px 8px; }
+  .card { padding: 16px; margin-bottom: 12px; }
+  .card-title { font-size: 14px; }
+  
+  /* Header */
+  .header { padding: 8px 10px; gap:6px; }
+  .header-logo { height: 24px; max-width: 70px; }
+  .header-title { font-size: 13px; }
+  .lang-btn { padding: 4px 10px; font-size: 11px; }
+  .role-selector { font-size: 10px; gap:3px; }
+  .role-selector select { font-size: 10px; padding: 3px 6px; }
+  
+  /* Tabs — stay sticky, tight padding */
+  .tabs { top: 48px; padding:0; gap:0; }
+  .tab { padding: 10px 5px; font-size: 11px; }
+  
+  /* Summary cards — 2 per row */
+  .summary-cards { gap:8px; }
+  .summary-card { min-width: calc(50% - 8px); flex:0 0 calc(50% - 8px); padding: 14px 10px; }
+  .summary-card .value { font-size: 18px; }
+  .summary-card .label { font-size: 10px; }
+  
+  /* Tables — full width scroll */
+  .comp-table { font-size: 12px; }
+  .comp-table th { padding: 8px 8px; font-size: 10px; }
+  .comp-table td { padding: 8px 8px; font-size: 12px; }
+  .result-section.show { padding: 12px; }
+  .result-section .comp-table { min-width: 480px; }
+  
+  /* Buttons */
+  .btn { padding: 9px 16px; font-size: 13px; border-radius: 8px; }
+  .btn-sm { padding: 6px 12px; font-size: 11px; }
+  
+  /* Approval items */
+  .approval-item { padding: 14px; }
+  .approval-hs { font-size: 13px; }
+  .approval-value { font-size: 11px; }
+  .approval-row { gap:4px; }
+  
+  /* Badges */
+  .badge { font-size: 10px; padding: 3px 8px; }
+  
+  /* Dashboard cards — 2x2 grid */
+  #dashboardCards .summary-card { min-width: calc(50% - 6px); flex:0 0 calc(50% - 6px); }
+  
+  /* Client tables */
+  #panel-clients .comp-table { min-width: 520px; }
+  
+  /* History search bar */
+  #panel-history .card > div { flex-direction: column; }
+  #histSearch, #histType, #histStatus { width:100%; }
+  
+  /* File items */
+  .file-item { flex-direction: column; align-items: flex-start !important; gap:8px; }
+  .file-item > div:last-child { width:100%; justify-content: flex-end; }
+  
+  /* Toast */
+  .toast { font-size: 12px; padding: 10px 20px; max-width: 90vw; }
+  
+  /* Modal detail tables */
+  .modal .comp-table { min-width: auto; }
+  .modal .comp-table td, .modal .comp-table th { padding: 6px 8px; font-size: 11px; }
+  
+  /* Approval actions */
+  .approval-actions { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <img src="logo_small.png" alt="乾翔" class="header-logo">
+    <span class="header-title"><span class="gold">LE</span> <span data-i18n="appTitle">报价系统</span></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px" id="headerRight">
+    <span class="role-selector">测试角色:
+    <select id="roleSelect" onchange="switchRole()">
+      <option value="cn">🇨🇳 中国团队</option>
+      <option value="us">🇺🇸 美国团队</option>
+    </select></span>
+    <button class="lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('dashboard')" data-i18n="tabDashboard">📊 看板</div>
+  <div class="tab" onclick="switchTab('tariff')" data-i18n="tabTariff">🔥 关税报价</div>
+  <div class="tab" onclick="switchTab('direct')" data-i18n="tabDirect">📋 直接报价</div>
+  <div class="tab" onclick="switchTab('approval')" data-i18n="tabApproval">✅ 审批中心</div>
+  <div class="tab" onclick="switchTab('clients')" data-i18n="tabClients">👥 客户</div>
+  <div class="tab" onclick="switchTab('files')" data-i18n="tabFiles">📁 文件管理</div>
+  <div class="tab" onclick="switchTab('history')" data-i18n="tabHistory">📊 历史数据</div>
+  <div class="tab" onclick="switchTab('ddp')" data-i18n="tabDdp">🚚 DDP</div>
+</div>
+
+<!-- DASHBOARD PANEL -->
+<div class="panel active" id="panel-dashboard">
+  <div class="card" style="text-align:center;padding:30px 20px">
+    <div class="card-title" data-i18n="dashboardTitle">📊 运营看板</div>
+    <div class="summary-cards" style="justify-content:center" id="dashboardCards"></div>
+  </div>
+  <!-- Recent activity -->
+  <div class="card">
+    <div class="card-title" data-i18n="recentActivity">🕐 最近动态</div>
+    <div id="recentActivity"></div>
+  </div>
+</div>
+
+<!-- TARIFF PANEL -->
+<div class="panel active" id="panel-tariff">
+  <div class="card">
+    <div class="card-title" data-i18n="hsTitle">🔍 HS编码选择</div>
+    <div class="form-row">
+      <div class="form-group" style="flex:3">
+        <label data-i18n="hsSelectLabel">选择商品</label>
+        <select id="hsSelect" onchange="onHsChange()"><option value="">— <span data-i18n="pleaseSelect">请选择</span> —</option></select>
+      </div>
+      <div class="form-group" style="flex:0 0 auto;align-self:flex-end">
+        <button class="btn btn-outline btn-sm" onclick="openCustomHs()" data-i18n="addHsBtn">+ 添加HS</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label data-i18n="cargoValue">货物价值 ($)</label>
+        <input type="number" id="cargoValue" placeholder="e.g. 50000" min="0" step="0.01" oninput="calcTariff()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label data-i18n="lePackageRateInput">🔥 LE打包关税率 (%)</label>
+        <input type="number" id="lePackageRateInput" placeholder="自动计算" min="0" step="0.1" oninput="calcTariff()" style="background:#fff8e1;font-weight:700;font-size:16px;color:#0D2B5E">
+      </div>
+      <div class="form-group">
+        <label data-i18n="brokerFeeInput">海关经纪人费 ($)</label>
+        <input type="number" id="brokerFeeInput" value="350" min="0" step="1" oninput="calcTariff()">
+      </div>
+    </div>
+  </div>
+  <div class="result-section" id="tariffResult">
+    <div class="summary-cards" id="tariffCards"></div>
+    <table class="comp-table" id="tariffTable"><thead><tr><th data-i18n="colItem">项目</th><th data-i18n="colWithoutLE">不用LE</th><th data-i18n="colWithLE">用LE</th></tr></thead><tbody></tbody></table>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn btn-gold" onclick="openSubmitModal('tariff')" data-i18n="submitForApproval">📤 提交审批</button>
+    </div>
+  </div>
+</div>
+
+<!-- DDP PANEL -->
+<div class="panel" id="panel-ddp">
+  <div class="card">
+    <div class="card-title" data-i18n="ddpTitle">📦 DDP 到岸成本计算</div>
+    <div class="form-row">
+      <div class="form-group"><label data-i18n="ddpHs">HS编码</label><select id="ddpHsSelect"><option value="">— Select —</option></select></div>
+      <div class="form-group"><label data-i18n="ddpExwLabel">EXW工厂价 ($)</label><input type="number" id="ddpExw" min="0" step="0.01" oninput="calcDdp()"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label data-i18n="ddpCnPartner">🇨🇳 中方物流合作商</label>
+        <select id="ddpCnPartner" onchange="onDdpPartnerChange('cn')" style="margin-bottom:4px">
+          <option value="">— 选择合作商 —</option>
+          <option value="中外运 (Sinotrans)">中外运 (Sinotrans)</option>
+          <option value="中远海 (COSCO Shipping)">中远海 (COSCO Shipping)</option>
+          <option value="DSV Panalpina">DSV Panalpina</option>
+          <option value="Ceva Logistics">Ceva Logistics</option>
+          <option value="Flexport">Flexport</option>
+          <option value="Kuehne+Nagel">Kuehne+Nagel (德迅)</option>
+          <option value="DHL GF">DHL Global Forwarding</option>
+          <option value="Expeditors">Expeditors (康捷空)</option>
+          <option value="__custom__">✏️ 自定义...</option>
+        </select>
+        <input type="text" id="ddpCnPartnerCustom" placeholder="手动输入中方物流商" style="width:100%;padding:11px 14px;border:1.5px solid #e2e6ef;border-radius:10px;font-size:14px;background:white;display:none" oninput="calcDdp()">
+      </div>
+      <div class="form-group"><label data-i18n="ddpCnLog">中国段物流 ($)</label><input type="number" id="ddpCnLog" value="800" step="0.01" oninput="calcDdp()"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label data-i18n="ddpUsPartner">🇺🇸 美方物流合作商</label>
+        <select id="ddpUsPartner" onchange="onDdpPartnerChange('us')" style="margin-bottom:4px">
+          <option value="">— 选择合作商 —</option>
+          <option value="UPS SCS">UPS Supply Chain Solutions</option>
+          <option value="DHL GF">DHL Global Forwarding</option>
+          <option value="CH Robinson">C.H. Robinson</option>
+          <option value="Expeditors">Expeditors (康捷空)</option>
+          <option value="Kuehne+Nagel">Kuehne+Nagel (德迅)</option>
+          <option value="Flexport">Flexport</option>
+          <option value="DSV Panalpina">DSV Panalpina</option>
+          <option value="Ceva Logistics">Ceva Logistics</option>
+          <option value="JB Hunt">J.B. Hunt (美段拖车)</option>
+          <option value="__custom__">✏️ 自定义...</option>
+        </select>
+        <input type="text" id="ddpUsPartnerCustom" placeholder="手动输入美方物流商" style="width:100%;padding:11px 14px;border:1.5px solid #e2e6ef;border-radius:10px;font-size:14px;background:white;display:none" oninput="calcDdp()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label data-i18n="ddpSea">海运费 ($)</label><input type="number" id="ddpSea" value="2800" step="0.01" oninput="calcDdp()"></div>
+      <div class="form-group"><label data-i18n="ddpUsLog">美段拖车 ($)</label><input type="number" id="ddpUsLog" value="1500" step="0.01" oninput="calcDdp()"></div>
+      <div class="form-group"><label data-i18n="ddpInsurance">保险 ($)</label><input type="number" id="ddpInsurance" value="330" step="0.01" oninput="calcDdp()"></div>
+    </div>
+  </div>
+  <div class="result-section" id="ddpResult">
+    <div class="summary-cards" id="ddpCards"></div>
+    <table class="comp-table" id="ddpTable"><thead><tr><th data-i18n="colFee">费用项</th><th data-i18n="colAmount">金额</th><th data-i18n="colPercent">占比</th></tr></thead><tbody></tbody></table>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn btn-gold" onclick="openSubmitModal('ddp')" data-i18n="submitForApproval">📤 提交审批</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIRECT QUOTE PANEL (报价逻辑二 — 中方提成本→美方直接回传报价) -->
+<div class="panel" id="panel-direct">
+  <p style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:12px" data-i18n="directDesc">中方提交客户原始成本 → 美方直接回传最终报价（一轮完成，无讨价还价）</p>
+  <!-- Quote Requests list (for US team to see) -->
+  <div id="directRequestList"><p style="color:rgba(255,255,255,0.5);text-align:center;padding:40px" data-i18n="noDirectRequests">暂无报价请求</p></div>
+  <!-- Submit new request (CN team) -->
+  <div id="directSubmitForm" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:12px">
+    <h4 style="margin-bottom:12px" data-i18n="directSubmitTitle">📤 提交原始成本</h4>
+    <div class="form-row">
+      <div class="form-group" style="flex:2">
+        <label data-i18n="hsSelectLabel">HS编码 / 商品</label>
+        <select id="directHsSelect"><option value="">— 请选择 —</option></select>
+      </div>
+      <div class="form-group" style="flex:0 0 auto;align-self:flex-end">
+        <button class="btn btn-outline btn-sm" onclick="openCustomHs()" data-i18n="addHsBtn">+ 添加HS</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label data-i18n="directClientName">客户名称</label><input id="directClient" placeholder="e.g. 德阳某工厂"></div>
+      <div class="form-group"><label data-i18n="directExw">EXW 工厂价 ($)</label><input id="directExw" type="number" step="0.01" min="0" placeholder="50000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label data-i18n="directWeight">货物重量 (kg)</label><input id="directWeight" type="number" placeholder="1000"></div>
+      <div class="form-group"><label data-i18n="directNote">备注</label><input id="directNote" placeholder="e.g. 需走洛杉矶港"></div>
+    </div>
+    <button class="btn btn-gold" onclick="submitDirectRequest()" data-i18n="directSubmitBtn">📤 提交给美方报价</button>
+  </div>
+</div>
+</div>
+
+<!-- APPROVAL PANEL -->
+<div class="panel" id="panel-approval">
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn btn-sm" style="background:#eee" onclick="filterApproval('all')" data-i18n="filterAll">全部</button>
+    <button class="btn btn-sm btn-outline" onclick="filterApproval('pending_review')" data-i18n="filterPending">⏳ 待审批</button>
+    <button class="btn btn-sm" style="background:#d4edda" onclick="filterApproval('approved')" data-i18n="filterApproved">✅ 已同意</button>
+    <button class="btn btn-sm" style="background:#c8e6c9" onclick="filterApproval('confirmed')">🎯 已成交</button>
+    <button class="btn btn-sm" style="background:#f8d7da" onclick="filterApproval('rejected')" data-i18n="filterRejected">❌ 已驳回</button>
+  </div>
+  <div id="approvalList"><p style="color:rgba(255,255,255,0.5);text-align:center;padding:40px" data-i18n="noApprovals">暂无审批记录</p></div>
+</div>
+
+<!-- CLIENTS PANEL -->
+<div class="panel" id="panel-clients">
+  <div class="card">
+    <div class="card-title" data-i18n="clientsTitle">👥 客户管理</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <input id="clientSearch" placeholder="搜索客户名称..." style="flex:2;min-width:180px;padding:10px 14px;border:1.5px solid #e2e6ef;border-radius:10px;font-size:13px">
+      <button class="btn btn-gold btn-sm" onclick="renderClients()">🔍 搜索</button>
+    </div>
+    <div id="clientsList"></div>
+  </div>
+</div>
+
+<!-- FILES PANEL -->
+<div class="panel" id="panel-files">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <select id="fileQuoteFilter" onchange="renderFiles()" style="padding:6px 12px;border:1px solid #ddd;border-radius:6px">
+      <option value="">— 按报价筛选 —</option>
+    </select>
+    <button class="btn btn-gold" onclick="openUploadDialog()" data-i18n="uploadFileBtn" id="uploadFileBtn">📎 上传 CI / PL</button>
+  </div>
+  <div id="fileList"><p style="color:rgba(255,255,255,0.5);text-align:center;padding:40px" data-i18n="noFiles">暂无文件，上传 CI/PL 以关联报价单</p></div>
+  <!-- Upload Dialog -->
+  <div class="modal-overlay" id="uploadDialog"><div class="modal" style="max-width:500px">
+    <h3 data-i18n="uploadDialogTitle">📎 上传 CI / PL</h3>
+    <div class="form-row"><div class="form-group">
+      <label data-i18n="uploadHsLabel">关联 HS 编码</label>
+      <select id="uploadHsSelect"><option value="">— 选择 HS 编码 —</option></select>
+      <input id="uploadHsCustom" placeholder="或手动输入 HS 编码" style="margin-top:4px;width:100%;padding:6px;border:1px solid #ddd;border-radius:6px">
+    </div></div>
+    <div class="form-row"><div class="form-group">
+      <label data-i18n="uploadDocType">文件类型</label>
+      <select id="uploadDocType"><option value="CI">CI (商业发票)</option><option value="PL">PL (装箱单)</option><option value="OTHER">其他</option></select>
+    </div></div>
+    <div class="form-row"><div class="form-group">
+      <label data-i18n="uploadSelectFiles">选择文件</label>
+      <input type="file" id="fileUploadInput" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" multiple onchange="handleFileUpload(event)" style="width:100%">
+    </div></div>
+    <div style="display:flex;gap:12px;margin-top:16px">
+      <button class="btn" style="background:#eee;flex:1" onclick="document.getElementById('uploadDialog').classList.remove('show')" data-i18n="cancel">取消</button>
+    </div>
+  </div></div>
+  <!-- File Preview Modal -->
+  <div class="modal-overlay" id="filePreviewModal"><div class="modal" id="filePreviewContent" style="max-width:90vw;width:800px"></div></div>
+</div>
+
+<!-- HISTORY PANEL -->
+<div class="panel" id="panel-history">
+  <div class="card">
+    <div class="card-title" data-i18n="historyTitle">📊 历史报价数据</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+      <input id="histSearch" placeholder="关键字搜索 HS编码/客户名/货值 (支持模糊)" style="flex:2;min-width:180px;padding:10px 14px;border:1.5px solid #e2e6ef;border-radius:10px;font-size:13px">
+      <select id="histType" style="flex:1;min-width:120px;padding:10px;border:1.5px solid #e2e6ef;border-radius:10px;font-size:13px;background:white">
+        <option value="all">全部类型</option>
+        <option value="tariff">关税报价</option>
+        <option value="ddp">DDP报价</option>
+        <option value="direct">直接报价</option>
+      </select>
+      <select id="histStatus" style="flex:1;min-width:110px;padding:10px;border:1.5px solid #e2e6ef;border-radius:10px;font-size:13px;background:white">
+        <option value="all">全部状态</option>
+        <option value="pending_review">待审批</option>
+        <option value="approved">已同意</option>
+        <option value="rejected">已拒绝</option>
+        <option value="pending">待回传</option>
+        <option value="responded">已回传</option>
+        <option value="confirmed">已成交</option>
+      </select>
+      <button class="btn btn-gold btn-sm" onclick="renderHistory()">🔍 搜索</button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+      <span style="font-size:12px;color:rgba(255,255,255,0.5)">导出日期范围:</span>
+      <input type="date" id="histDateFrom" style="padding:6px 10px;border:1.5px solid #e2e6ef;border-radius:8px;font-size:12px">
+      <span style="color:rgba(255,255,255,0.4)">—</span>
+      <input type="date" id="histDateTo" style="padding:6px 10px;border:1.5px solid #e2e6ef;border-radius:8px;font-size:12px">
+      <button class="btn btn-gold btn-sm" onclick="exportHistory()">📥 导出 CSV</button>
+    </div>
+    <div id="historyTableWrapper" style="overflow-x:auto">
+      <table class="comp-table" id="historyTable">
+        <thead><tr>
+          <th>日期</th><th>类型</th><th>HS编码</th><th>商品</th><th>客户/审批人</th><th>货值</th><th>LE税率</th><th>总费用</th><th>状态</th>
+        </tr></thead>
+        <tbody id="historyBody"><tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">暂无历史数据</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER/LOGIN MODAL (mock — Supabase Auth placeholder) -->
+<div class="modal-overlay" id="registerModal"><div class="modal" style="max-width:400px">
+  <h3 data-i18n="registerTitle">👤 注册账号</h3>
+  <p style="color:#999;font-size:12px;margin-bottom:12px" data-i18n="registerHint">注册后自动分配角色，后续对接Supabase Auth</p>
+  <div class="form-row"><div class="form-group">
+    <label data-i18n="emailLabel">邮箱</label>
+    <input id="regEmail" placeholder="user@le-logistics.com">
+  </div></div>
+  <div class="form-row"><div class="form-group">
+    <label data-i18n="passwordLabel">密码</label>
+    <input id="regPassword" type="password" placeholder="******">
+  </div></div>
+  <div class="form-row"><div class="form-group">
+    <label data-i18n="regRoleLabel">注册角色</label>
+    <select id="regRole">
+      <option value="cn">🇨🇳 中国团队 (China Team)</option>
+      <option value="us">🇺🇸 美国团队 (US Team)</option>
+    </select>
+  </div></div>
+  <div style="display:flex;gap:12px;margin-top:16px">
+    <button class="btn btn-gold" onclick="doRegister()" style="flex:1" data-i18n="registerBtn">📝 注册</button>
+    <button class="btn" style="background:#eee;flex:1" onclick="quickLogin()" data-i18n="loginBtn">🔑 快速登录</button>
+  </div>
+</div></div>
+
+<!-- DIRECT RESPOND MODAL (moved outside panel-direct — US team responds to CN cost request) -->
+<div class="modal-overlay" id="directRespondModal"><div class="modal">
+  <h3 data-i18n="directRespondTitle">📋 回传报价</h3>
+  <p style="color:#999;font-size:12px;margin-bottom:12px" id="directRespondInfo"></p>
+  <div id="directRespondFields"></div>
+  <div style="display:flex;gap:12px;margin-top:16px">
+    <button class="btn btn-gold" onclick="submitDirectResponse()" style="flex:1" data-i18n="directRespondBtn">📤 回传最终报价</button>
+    <button class="btn" style="background:#eee;flex:1" onclick="document.getElementById('directRespondModal').classList.remove('show')" data-i18n="cancel">取消</button>
+  </div>
+</div></div>
+
+<!-- PROFIT CHECK MODAL — US response below business threshold -->
+<div class="modal-overlay" id="profitCheckModal"><div class="modal" style="max-width:520px;border-top:3px solid #dc3545">
+  <h3 style="color:#dc3545">⚠️ <span data-i18n="profitCheckTitle">利润空间不足 — 需填写说明</span></h3>
+  <div id="profitCheckBody" style="margin-bottom:12px;font-size:13px;line-height:1.6"></div>
+  <div class="form-row"><div class="form-group">
+    <label data-i18n="profitExplainLabel">详细说明原因 (必填)</label>
+    <textarea id="profitExplain" style="width:100%;min-height:80px;padding:8px;border:2px solid #dc3545;border-radius:6px;resize:vertical" data-i18n-placeholder="profitExplainPlaceholder"></textarea>
+  </div></div>
+  <div style="display:flex;gap:12px;margin-top:8px">
+    <button class="btn" style="background:#dc3545;color:white;flex:1" onclick="confirmProfitOverride()" data-i18n="profitOverrideBtn">⚠️ 强制提交 (已填写说明)</button>
+    <button class="btn" style="background:#eee;flex:1" onclick="cancelProfitCheck()" data-i18n="cancel">取消</button>
+  </div>
+</div></div>
+
+<div class="modal-overlay" id="customHsModal"><div class="modal">
+  <h3 data-i18n="addHsTitle">➕ 添加自定义HS编码</h3>
+  <div class="form-row"><div class="form-group"><label data-i18n="hsCodeLabel">HS编码</label><input id="newHsCode" placeholder="e.g. 8507.90.80"></div></div>
+  <div class="form-row"><div class="form-group"><label data-i18n="hsNameLabel">商品名称</label><input id="newHsName" placeholder="e.g. Lithium Battery"></div></div>
+  <div class="form-row">
+    <div class="form-group"><label>MFN (%)</label><input id="newMfn" type="number" step="0.1" value="3.4"></div>
+    <div class="form-group"><label>S.301 (%)</label><input id="newS301" type="number" step="0.1" value="25"></div>
+    <div class="form-group"><label>S.122 (%)</label><input id="newS122" type="number" step="0.1" value="10"></div>
+  </div>
+  <div style="display:flex;gap:12px;margin-top:16px">
+    <button class="btn btn-primary" onclick="addCustomHs()" style="flex:1" data-i18n="confirm">确认添加</button>
+    <button class="btn" style="background:#eee;flex:1" onclick="closeCustomHs()" data-i18n="cancel">取消</button>
+  </div>
+</div></div>
+
+<!-- SUBMIT MODAL -->
+<div class="modal-overlay" id="submitModal"><div class="modal">
+  <h3 data-i18n="submitModalTitle">📤 提交审批</h3>
+  <p style="color:#999;font-size:13px;margin-bottom:8px" data-i18n="submitSubtitle">核对并修改以下报价，确认后提交给美方审批</p>
+  <div id="submitEditFields"></div>
+  <div class="form-row" style="margin-top:12px"><div class="form-group">
+    <label data-i18n="selectApprover">选择审批人</label>
+    <select id="approverSelect"><option value="Tyson">Tyson</option><option value="Justin">Justin</option></select>
+  </div></div>
+  <div class="form-row"><div class="form-group">
+    <label data-i18n="note">备注 (可选)</label>
+    <input id="submitNote" data-i18n-placeholder="notePlaceholder">
+  </div></div>
+  <div style="display:flex;gap:12px;margin-top:16px">
+    <button class="btn btn-gold" onclick="submitForApproval()" style="flex:1" data-i18n="confirmSubmit">确认提交</button>
+    <button class="btn" style="background:#eee;flex:1" onclick="closeSubmitModal()" data-i18n="cancel">取消</button>
+  </div>
+</div></div>
+
+<!-- APPROVAL DETAIL MODAL -->
+<div class="modal-overlay" id="approvalDetailModal"><div class="modal" id="approvalDetailContent"></div></div>
+<!-- COUNTER-OFFER MODAL (US team must fill when disagreeing) -->
+<div class="modal-overlay" id="counterOfferModal"><div class="modal">
+  <h3 data-i18n="counterOfferTitle">✋ 驳回报价 — 请填写你方能接受的报价</h3>
+  <p style="color:#999;font-size:13px;margin-bottom:12px" data-i18n="counterOfferHint">以下所有字段为必填，中方将看到你的还盘数据</p>
+  <div id="counterOfferFields"></div>
+  <div class="form-row" style="margin-top:12px"><div class="form-group">
+    <label data-i18n="rejectReason">驳回原因 (必填)</label>
+    <textarea id="rejectReason" style="width:100%;min-height:60px;padding:8px;border:1px solid #ddd;border-radius:6px;resize:vertical" data-i18n-placeholder="rejectReasonPlaceholder"></textarea>
+  </div></div>
+  <div style="display:flex;gap:12px;margin-top:16px">
+    <button class="btn btn-gold" onclick="submitCounterOffer()" style="flex:1" data-i18n="submitCounterOfferBtn">📤 提交还盘 (Submit Counter-Offer)</button>
+    <button class="btn" style="background:#eee;flex:1" onclick="closeCounterOfferModal()" data-i18n="cancel">取消</button>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== I18N ==========
+const I18N = {
+  zh: {
+    appTitle:"报价系统", tabTariff:"🔥 关税报价", tabDdp:"🚚 DDP 报价", tabApproval:"✅ 审批中心",
+    hsTitle:"🔍 HS编码选择", hsSelectLabel:"选择商品", pleaseSelect:"请选择", addHsBtn:"+ 添加HS",
+    cargoValue:"货物价值 ($)", colItem:"项目", colWithoutLE:"不用LE", colWithLE:"用LE",
+    submitForApproval:"📤 提交审批", ddpTitle:"📦 DDP 到岸成本计算", ddpHs:"HS编码",
+    ddpExwLabel:"EXW工厂价 ($)", ddpCnLog:"中国段物流 ($)", ddpSea:"海运费 ($)",
+    ddpUsLog:"美段拖车 ($)", ddpInsurance:"保险 ($)", ddpCnPartner:"🇨🇳 中方物流合作商", ddpUsPartner:"🇺🇸 美方物流合作商",
+    colFee:"费用项", colAmount:"金额", colPercent:"占比",
+    filterAll:"全部", filterPending:"⏳ 待审批", filterApproved:"✅ 已同意", filterRejected:"❌ 已拒绝",
+    noApprovals:"暂无审批记录", addHsTitle:"➕ 添加自定义HS编码", hsCodeLabel:"HS编码", hsNameLabel:"商品名称",
+    confirm:"确认添加", cancel:"取消", submitModalTitle:"📤 提交审批", selectApprover:"选择审批人",
+    submitSubtitle:"核对并修改以下报价，确认后提交给美方审批",
+    lePackageRateInput:"🔥 LE打包关税率 (%)", brokerFeeInput:"海关经纪人费 ($)",
+    note:"备注 (可选)", notePlaceholder:"给审批人的留言...", confirmSubmit:"确认提交",
+    withoutLE:"不用LE", withLE:"用LE", lePackage:"🔥 LE打包", savingsLabel:"省税",
+    origTariffBreak:"原始关税构成(参考)", origTotalRate:"原始总税率", origDutyAmt:"原始关税金额",
+    lePackageRate:"🔥 LE打包关税率", lePackageAmt:"LE打包关税金额", savingsAmt:"省税金额",
+    brokerFee:"海关经纪人费", clientTotal:"客户总费用", totalFeeRate:"总费用税率",
+    exw:"EXW工厂价", cnLogistics:"中国段物流", seaFreight:"海运", leDuty:"LE打包关税",
+    broker:"经纪人费", insurance:"保险", usTrucking:"美段拖车",
+    landedCost:"到岸总成本", serviceFee:"✚ LE服务费(5%)", clientTotalDdp:"🔥 客户总支出",
+    hsExists:"该HS编码已存在", hsAdded:"已添加", selectHsFirst:"请先选择HS编码",
+    fillCargo:"请填写货值", submitted:"已提交审批", approved:"已批准", rejected:"已驳回",
+    pendingReview:"待审批", approvedStatus:"已同意", rejectedStatus:"已拒绝",
+    tariffQuote:"关税报价", ddpQuote:"DDP报价", quoteDetail:"报价详情",
+    agreeBtn:"同意 (Accept)", disagreeBtn:"不同意 (Disagree)",
+    agreed:"已同意", disagreed:"已拒绝",
+    approvalHint:"美方点击同意后报价生效；点不同意必须填写还盘数据",
+    counterOfferTitle:"✋ 驳回报价 — 请填写你方能接受的综合报价",
+    counterOfferHint:"以下字段为必填，中方将直接看到你方还盘数据作为修改依据",
+    rejectReason:"驳回原因 (必填)",
+    rejectReasonPlaceholder:"请说明不接受的原因...",
+    counterOfferLeRate:"🔥 你方接受 LE打包关税率 (%)",
+    counterOfferBroker:"你方接受 经纪人费 ($)",
+    counterOfferTotal:"还盘总费用",
+    submitCounterOfferBtn:"📤 提交还盘（驳回）",
+    counterOfferSummary:"美方还盘价格",
+    tabFiles:"📁 文件管理", roleLabel:"当前角色:",
+    uploadFileBtn:"📎 上传 CI / PL", noFiles:"暂无文件，上传 CI/PL 以关联报价单",
+    preview:"👁 预览", downloadFile:"⬇ 下载", close:"关闭",
+    filesUploaded:"个文件已上传", fileDeleted:"已删除", deleteFileConfirm:"确认删除此文件？",
+    previewNotAvailable:"暂不支持预览此格式",
+    tabDirect:"📋 直接报价", registerTitle:"👤 注册账号", registerHint:"注册后自动分配角色，后续对接Supabase Auth",
+    emailLabel:"邮箱", passwordLabel:"密码", regRoleLabel:"注册角色",
+    registerBtn:"📝 注册", loginBtn:"🔑 快速登录", clickToRegister:"👤 点击注册/登录",
+    uploadDialogTitle:"📎 上传 CI / PL", uploadHsLabel:"关联 HS 编码", uploadDocType:"文件类型",
+    uploadSelectFiles:"选择文件",
+    directDesc:"中方提交客户原始成本 → 美方直接回传最终报价（一轮完成，无讨价还价）",
+    directSubmitTitle:"📤 提交原始成本", directClientName:"客户名称", directExw:"EXW 工厂价 ($)",
+    directWeight:"货物重量 (kg)", directNote:"备注", directSubmitBtn:"📤 提交给美方报价",
+    directRespondTitle:"📋 回传最终报价", directRespondBtn:"📤 回传最终报价",
+    directSubmitted:"直接报价请求已提交", directResponded:"报价已回传",
+    noDirectRequests:"暂无直接报价请求", responded:"已回传",
+    profitCheckTitle:"利润空间不足 — 必须填写说明",
+    profitCheckWarning:"当前美方报价超出上限（终端客户报价=关税×80%−中方利润=货值×5%）。如需继续提交，必须填写详细原因说明。",
+    profitExplainLabel:"详细说明原因 (必填)",
+    profitExplainPlaceholder:"请说明为何低于利润底线，例如：大客户战略性亏损、长期合同锁定、竞争性报价等...",
+    profitOverrideBtn:"⚠️ 强制提交 (已填写说明)",
+    tabHistory:"📊 历史数据", historyTitle:"📊 历史报价数据",
+    tabDashboard:"📊 看板", tabClients:"👥 客户", dashboardTitle:"📊 运营看板",
+    totalQuotes:"总报价数", totalRevenueLabel:"累计收入", recentActivity:"🕐 最近动态",
+    confirmedLabel:"已成交", confirmDealBtn:"🎯 确认成交", confirmDealHint:"与客户达成协议后点击确认，收入计入看板统计",
+    clientsTitle:"👥 客户管理",
+    tariff:["锂离子蓄电池","碳纤维制品","钢结构件","肽类化合物","生物油脂"],
+  },
+  en: {
+    appTitle:"Quote System", tabTariff:"🔥 Tariff Quote", tabDdp:"🚚 DDP Quote", tabApproval:"✅ Approvals",
+    hsTitle:"🔍 HS Code Selection", hsSelectLabel:"Select Product", pleaseSelect:"Please Select", addHsBtn:"+ Add HS",
+    cargoValue:"Cargo Value ($)", colItem:"Item", colWithoutLE:"Without LE", colWithLE:"With LE",
+    submitForApproval:"📤 Submit for Approval", ddpTitle:"📦 DDP Landed Cost", ddpHs:"HS Code",
+    ddpExwLabel:"EXW Price ($)", ddpCnLog:"China Logistics ($)", ddpSea:"Ocean Freight ($)",
+    ddpUsLog:"US Trucking ($)", ddpInsurance:"Insurance ($)", ddpCnPartner:"🇨🇳 CN Logistics Partner", ddpUsPartner:"🇺🇸 US Logistics Partner",
+    colFee:"Cost Item", colAmount:"Amount", colPercent:"Share",
+    filterAll:"All", filterPending:"⏳ Pending", filterApproved:"✅ Agreed", filterRejected:"❌ Disagreed",
+    noApprovals:"No approval records", addHsTitle:"➕ Add Custom HS Code", hsCodeLabel:"HS Code", hsNameLabel:"Product Name",
+    confirm:"Confirm", cancel:"Cancel", submitModalTitle:"📤 Submit for Approval", selectApprover:"Select Approver",
+    submitSubtitle:"Review and edit quote values before submitting to the US team for approval",
+    lePackageRateInput:"🔥 LE Package Rate (%)", brokerFeeInput:"Customs Broker Fee ($)",
+    note:"Note (optional)", notePlaceholder:"Message to approver...", confirmSubmit:"Submit",
+    withoutLE:"Without LE", withLE:"With LE", lePackage:"🔥 LE Package", savingsLabel:"Savings",
+    origTariffBreak:"Original Tariff (Reference)", origTotalRate:"Original Total Rate", origDutyAmt:"Original Duty Amt",
+    lePackageRate:"🔥 LE Package Rate", lePackageAmt:"LE Package Duty", savingsAmt:"Savings",
+    brokerFee:"Customs Broker Fee", clientTotal:"Client Total", totalFeeRate:"Total Fee Rate",
+    exw:"EXW Price", cnLogistics:"China Logistics", seaFreight:"Ocean Freight", leDuty:"LE Package Duty",
+    broker:"Broker Fee", insurance:"Insurance", usTrucking:"US Trucking",
+    landedCost:"Landed Cost", serviceFee:"✚ LE Service Fee (5%)", clientTotalDdp:"🔥 Client Total",
+    hsExists:"HS code already exists", hsAdded:"Added", selectHsFirst:"Please select HS code first",
+    fillCargo:"Please enter cargo value", submitted:"Submitted for approval", approved:"Approved", rejected:"Rejected",
+    pendingReview:"Pending Review", approvedStatus:"Agreed", rejectedStatus:"Disagreed",
+    tariffQuote:"Tariff Quote", ddpQuote:"DDP Quote", quoteDetail:"Quote Detail",
+    agreeBtn:"Agree (Accept)", disagreeBtn:"Disagree (Reject)",
+    agreed:"Agreed", disagreed:"Disagreed",
+    approvalHint:"US team clicks Agree to confirm; Disagree requires filling counter-offer data",
+    counterOfferTitle:"✋ Reject Quote — Enter Your Acceptable Quote",
+    counterOfferHint:"All fields required. China team will see your counter-offer numbers.",
+    rejectReason:"Reason for Rejection (Required)",
+    rejectReasonPlaceholder:"Explain why you cannot accept...",
+    counterOfferLeRate:"🔥 Your Acceptable LE Package Rate (%)",
+    counterOfferBroker:"Your Acceptable Broker Fee ($)",
+    counterOfferTotal:"Counter-Offer Total",
+    submitCounterOfferBtn:"📤 Submit Counter-Offer (Reject)",
+    counterOfferSummary:"US Counter-Offer",
+    tabFiles:"📁 File Manager", roleLabel:"Role:",
+    uploadFileBtn:"📎 Upload CI / PL", noFiles:"No files. Upload CI/PL linked to quotes.",
+    preview:"👁 Preview", downloadFile:"⬇ Download", close:"Close",
+    filesUploaded:"file(s) uploaded", fileDeleted:"Deleted", deleteFileConfirm:"Delete this file?",
+    previewNotAvailable:"Preview not available for this format",
+    tabDirect:"📋 Direct Quote", registerTitle:"👤 Register", registerHint:"Role auto-assigned on registration. Supabase Auth coming.",
+    emailLabel:"Email", passwordLabel:"Password", regRoleLabel:"Role",
+    registerBtn:"📝 Register", loginBtn:"🔑 Quick Login", clickToRegister:"👤 Click to Register/Login",
+    uploadDialogTitle:"📎 Upload CI / PL", uploadHsLabel:"Link to HS Code", uploadDocType:"Doc Type",
+    uploadSelectFiles:"Select Files",
+    directDesc:"CN submits client cost → US responds with final quote (one round, no negotiation)",
+    directSubmitTitle:"📤 Submit Cost Data", directClientName:"Client Name", directExw:"EXW Price ($)",
+    directWeight:"Weight (kg)", directNote:"Note", directSubmitBtn:"📤 Submit for US Quote",
+    directRespondTitle:"📋 Respond with Quote", directRespondBtn:"📤 Send Final Quote",
+    directSubmitted:"Cost request submitted", directResponded:"Quote responded",
+    noDirectRequests:"No quote requests", responded:"Responded",
+    profitCheckTitle:"Insufficient Margin — Explanation Required",
+    profitCheckWarning:"US quote exceeds ceiling (Client ceiling = tariff×80% − CN profit = cargo×5%). A detailed written explanation is required to proceed.",
+    profitExplainLabel:"Detailed Explanation (Required)",
+    profitExplainPlaceholder:"Explain why margin is below threshold, e.g. strategic account, competitive pricing, long-term contract...",
+    profitOverrideBtn:"⚠️ Force Submit (explanation attached)",
+    tabHistory:"📊 History", historyTitle:"📊 Historical Quotes",
+    tabDashboard:"📊 Dashboard", tabClients:"👥 Clients", dashboardTitle:"📊 Operations Dashboard",
+    totalQuotes:"Total Quotes", totalRevenueLabel:"Total Revenue", recentActivity:"🕐 Recent Activity",
+    confirmedLabel:"Closed", confirmDealBtn:"🎯 Confirm Deal", confirmDealHint:"Click after reaching agreement with client. Revenue counts toward dashboard.",
+    clientsTitle:"👥 Client Management",
+    tariff:["Li-Ion Battery","Carbon Fiber","Steel Structure","Peptide Compound","Bio Oil"],
+  }
+};
+
+let currentLang = 'zh';
+
+function t(key) { return (I18N[currentLang] && I18N[currentLang][key]) || key; }
+
+function toggleLang() {
+  currentLang = currentLang === 'zh' ? 'en' : 'zh';
+  document.getElementById('langBtn').textContent = currentLang === 'zh' ? 'EN' : '中';
+  document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+  // Refresh all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (I18N[currentLang][k]) el.textContent = I18N[currentLang][k];
+  });
+  // Refresh placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const k = el.getAttribute('data-i18n-placeholder');
+    if (I18N[currentLang][k]) el.placeholder = I18N[currentLang][k];
+  });
+  // Refresh selects
+  popHsDropdowns();
+  // Refresh tariff/DDP/direct results if visible
+  if (document.getElementById('tariffResult').classList.contains('show')) calcTariff();
+  if (document.getElementById('ddpResult').classList.contains('show')) calcDdp();
+  // Refresh approval
+  if (document.getElementById('panel-approval').classList.contains('active')) renderApproval();
+  // Refresh page title
+  document.title = 'LE ' + t('appTitle');
+}
+document.title = 'LE ' + t('appTitle');
+
+// ========== DATA ==========
+let hsData = [
+  { code:"8507.90.80", name:()=>t('tariff')[0], mfn:3.4, s301:25, s122:10 },
+  { code:"6815.13.00", name:()=>t('tariff')[1], mfn:5.0, s301:20, s122:10 },
+  { code:"9406.20",    name:()=>t('tariff')[2], mfn:5.0, s301:25, s122:10 },
+  { code:"2933.99.79", name:()=>t('tariff')[3], mfn:5.0, s301:20, s122:10 },
+  { code:"1504.10",    name:()=>t('tariff')[4], mfn:4.0, s301:25, s122:8.9 },
+];
+let approvalQueue = [];
+let pendingSubmit = null;
+
+function popHsDropdowns() {
+  const opts = hsData.map(h => `<option value="${h.code}" data-mfn="${h.mfn}" data-s301="${h.s301}" data-s122="${h.s122}">${h.code} ${typeof h.name==='function'?h.name():h.name} (${(h.mfn+h.s301+h.s122).toFixed(1)}%)</option>`).join('');
+  document.getElementById('hsSelect').innerHTML = '<option value="">— ' + t('pleaseSelect') + ' —</option>' + opts;
+  document.getElementById('ddpHsSelect').innerHTML = '<option value="">— Select —</option>' + opts;
+  const directSel = document.getElementById('directHsSelect');
+  if(directSel) directSel.innerHTML = '<option value="">— ' + t('pleaseSelect') + ' —</option>' + opts;
+}
+popHsDropdowns();
+
+// ========== ROLE (测试模式 — 自由切换，后续接Supabase Auth锁定) ==========
+let currentRole = 'cn';
+function switchRole(){
+  currentRole = document.getElementById('roleSelect').value;
+  roleApplyUI();
+  switchTab(currentRole==='us'?'approval':'tariff');
+}
+function roleCan(permission){
+  const map = {
+    'submit_cost': ['cn'], 'respond_quote': ['us'],
+    'submit_quote': ['cn'], 'approve_quote': ['us'],
+    'upload_files': ['cn'], 'view_all': ['cn','us'],
+  };
+  return (map[permission]||[]).includes(currentRole);
+}
+function roleApplyUI(){
+  const tabs = document.querySelectorAll('.tab');
+  // Tab order: dashboard(0), tariff(1), direct(2), approval(3), clients(4), files(5), history(6), ddp(7)
+  const tabVisible = {
+    'cn': [true, true, true, true, true, true, true, true],
+    'us': [true, false, false, true, true, true, true, true],
+  };
+  const vis = tabVisible[currentRole] || [true,true,true,true,true,true,true,true];
+  tabs.forEach((t,i)=>{ t.style.display = vis[i] ? '' : 'none'; });
+  const uploadBtn = document.getElementById('uploadFileBtn');
+  if(uploadBtn) uploadBtn.style.display = roleCan('upload_files') ? '' : 'none';
+  const directForm = document.getElementById('directSubmitForm');
+  if(directForm) directForm.style.display = roleCan('submit_cost') ? '' : 'none';
+}
+
+function switchTab(name) {
+  ['dashboard','tariff','direct','approval','clients','files','history','ddp'].forEach((n,i)=>{
+    const tab = document.querySelectorAll('.tab')[i];
+    if(tab) tab.classList.toggle('active', n===name);
+    const panel = document.getElementById('panel-'+n);
+    if(panel) panel.classList.toggle('active', n===name);
+  });
+  if(name==='dashboard') renderDashboard();
+  if(name==='approval') renderApproval();
+  if(name==='direct') renderDirectRequests();
+  if(name==='history') renderHistory();
+  if(name==='files'){ refreshQuoteFilter(); renderFiles(); }
+  if(name==='clients') renderClients();
+}
+
+// ========== DASHBOARD ==========
+function getDashboardStats(){
+  const all = getAllQuotes();
+  const pending = all.filter(q=>q.status==='pending_review'||q.status==='pending').length;
+  const agreed = all.filter(q=>q.status==='approved'||q.status==='responded').length;
+  const confirmed = all.filter(q=>q.status==='confirmed').length;
+  const rejected = all.filter(q=>q.status==='rejected').length;
+  // Cumulative revenue: sum of all confirmed deal totals
+  let totalRevenue = 0;
+  all.forEach(q=>{ if(q.status==='confirmed' && q.total) totalRevenue += q.total; });
+  // Unique clients
+  const clients = new Set();
+  all.forEach(q=>{ if(q.client) clients.add(q.client); });
+  approvalQueue.forEach(q=>{ if(q.approver) clients.add(q.approver); });
+  return { total: all.length, pending, agreed, confirmed, rejected, totalRevenue, clients: clients.size };
+}
+
+function renderDashboard(){
+  const s = getDashboardStats();
+  const dt = getAllQuotes();
+  const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('dashboardCards').innerHTML = `
+    <div class="summary-card"><div class="label">${t('totalQuotes')}</div><div class="value">${s.total}</div></div>
+    <div class="summary-card"><div class="label">⏳ ${t('pendingReview')}</div><div class="value highlight">${s.pending}</div></div>
+    <div class="summary-card"><div class="label">🤝 ${t('agreed')}</div><div class="value green">${s.agreed}</div></div>
+    <div class="summary-card"><div class="label">🎯 ${t('confirmedLabel')}</div><div class="value green">${s.confirmed||0}</div></div>
+    <div class="summary-card"><div class="label">💰 ${t('totalRevenueLabel')}</div><div class="value highlight">${fmt(s.totalRevenue||0)}</div></div>
+    <div class="summary-card"><div class="label">👥 ${t('tabClients')}</div><div class="value">${s.clients}</div></div>
+  `;
+  // Recent activity
+  const recent = dt.slice(0, 6);
+  if(!recent.length){
+    document.getElementById('recentActivity').innerHTML = `<p style="color:rgba(255,255,255,0.4);text-align:center;padding:20px">暂无活动</p>`;
+    return;
+  }
+  const statusLabel = { pending_review: t('pendingReview'), approved: t('agreed'), rejected: t('disagreed'), pending: t('pendingReview'), responded: t('responded'), confirmed: t('confirmedLabel') };
+  const statusClass = { pending_review:'pending', approved:'approved', rejected:'rejected', pending:'pending', responded:'approved', confirmed:'approved' };
+  document.getElementById('recentActivity').innerHTML = recent.map(q=>`
+    <div class="approval-item" style="border-left-color:${q.status==='approved'||q.status==='responded'?'#059669':q.status==='rejected'?'#dc3545':'var(--gold)'}">
+      <div class="approval-row">
+        <span class="approval-hs">${q.hs} ${q.name}</span>
+        <span class="badge badge-${statusClass[q.status]||'pending'}">${statusLabel[q.status]||q.status}</span>
+      </div>
+      <div class="approval-row" style="margin-top:4px">
+        <span class="approval-value">${q.client||''}</span>
+        <span class="approval-value">${fmt(q.cargo||0)}</span>
+        <span class="approval-value">${q.leRate?q.leRate.toFixed(1)+'%':''}</span>
+        <span class="approval-value">${q.date}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== CLIENTS ==========
+function getClientList(){
+  const all = getAllQuotes();
+  const clientMap = {};
+  all.forEach(q=>{
+    const key = q.client||q.approver||'Unknown';
+    if(!key||key==='Unknown') return;
+    if(!clientMap[key]) clientMap[key] = { name: key, quotes: [], lastDate: '' };
+    clientMap[key].quotes.push(q);
+    if(q.date > clientMap[key].lastDate) clientMap[key].lastDate = q.date;
+  });
+  return Object.values(clientMap).sort((a,b)=>b.lastDate.localeCompare(a.lastDate));
+}
+
+function renderClients(){
+  const search = (document.getElementById('clientSearch')?.value||'').toLowerCase();
+  let clients = getClientList();
+  if(search) clients = clients.filter(c=>c.name.toLowerCase().includes(search));
+  const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+  const statusLabel = { pending_review:'待审批', approved:'已同意', rejected:'已拒绝', pending:'待回传', responded:'已回传', confirmed:'已成交' };
+  if(!clients.length){
+    document.getElementById('clientsList').innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:40px">暂无客户数据</p>';
+    return;
+  }
+  document.getElementById('clientsList').innerHTML = clients.map(c=>`
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <strong style="font-size:15px;color:var(--navy)">👤 ${c.name}</strong>
+        <span style="font-size:12px;color:var(--text-muted)">${c.quotes.length}条报价 · 最近: ${c.lastDate}</span>
+      </div>
+      <table class="comp-table" style="margin-top:4px"><thead><tr>
+        <th>日期</th><th>HS编码</th><th>商品</th><th>货值</th><th>LE税率</th><th>状态</th>
+      </tr></thead><tbody>
+      ${c.quotes.slice(0,5).map(q=>`
+        <tr>
+          <td style="font-size:11px">${q.date}</td>
+          <td style="font-weight:600">${q.hs}</td>
+          <td>${q.name}</td>
+          <td>${fmt(q.cargo||0)}</td>
+          <td>${q.leRate?q.leRate.toFixed(1)+'%':'—'}</td>
+          <td><span class="badge badge-${q.status==='pending_review'?'pending':q.status==='approved'||q.status==='responded'?'approved':'rejected'}">${statusLabel[q.status]||q.status}</span></td>
+        </tr>
+      `).join('')}
+      ${c.quotes.length>5?`<tr><td colspan="6" style="text-align:center;color:var(--text-muted);font-size:12px">... 还有 ${c.quotes.length-5} 条记录</td></tr>`:''}
+      </tbody></table>
+    </div>
+  `).join('');
+}
+
+// ========== CUSTOM HS ==========
+function openCustomHs() { document.getElementById('customHsModal').classList.add('show'); document.getElementById('newHsCode').focus(); }
+function closeCustomHs() { document.getElementById('customHsModal').classList.remove('show'); }
+function addCustomHs() {
+  const code = document.getElementById('newHsCode').value.trim();
+  const name = document.getElementById('newHsName').value.trim();
+  const mfn = parseFloat(document.getElementById('newMfn').value)||0;
+  const s301 = parseFloat(document.getElementById('newS301').value)||0;
+  const s122 = parseFloat(document.getElementById('newS122').value)||0;
+  if(!code||!name){ toast('HS code + name required'); return; }
+  if(hsData.find(h=>h.code===code)){ toast(t('hsExists')); return; }
+  hsData.push({code, name, mfn, s301, s122});
+  popHsDropdowns();
+  document.getElementById('hsSelect').value = code;
+  document.getElementById('ddpHsSelect').value = code;
+  closeCustomHs();
+  toast(`✅ ${t('hsAdded')}: ${code} ${name}`);
+  onHsChange();
+}
+
+// ========== TARIFF ==========
+function getHs(selId) {
+  const sel = document.getElementById(selId);
+  const opt = sel.options[sel.selectedIndex];
+  if(!opt||!opt.dataset.mfn) return null;
+  const txt = opt.text;
+  const namePart = txt.substring(txt.indexOf(' ')+1).split('(')[0].trim();
+  return { code:opt.value, name:namePart, mfn:parseFloat(opt.dataset.mfn), s301:parseFloat(opt.dataset.s301), s122:parseFloat(opt.dataset.s122) };
+}
+function onHsChange(){
+  const hs = getHs('hsSelect');
+  if(hs){
+    const autoLe = hs.mfn + hs.s301*0.75 + hs.s122*0.70;
+    const inp = document.getElementById('lePackageRateInput');
+    // Only auto-fill if user hasn't manually set a different value
+    if(!inp.value || parseFloat(inp.value)===0){
+      inp.value = autoLe.toFixed(1);
+      inp.placeholder = autoLe.toFixed(1);
+    } else {
+      inp.placeholder = '(auto: '+autoLe.toFixed(1)+'%)';
+    }
+  }
+  calcTariff();
+}
+
+function calcTariff() {
+  const hs = getHs('hsSelect');
+  const val = parseFloat(document.getElementById('cargoValue').value)||0;
+  const leRate = parseFloat(document.getElementById('lePackageRateInput').value)||0;
+  const broker = parseFloat(document.getElementById('brokerFeeInput').value)||0;
+  if(!hs||val<=0||leRate<=0){ document.getElementById('tariffResult').classList.remove('show'); return; }
+  const origRate = hs.mfn+hs.s301+hs.s122;
+  const origDuty = val*origRate/100;
+  const leDuty = val*leRate/100;
+  const savings = origDuty-leDuty;
+  const origTotal = origDuty+broker;
+  const leTotal = leDuty+broker;
+  const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+
+  document.getElementById('tariffCards').innerHTML = `
+    <div class="summary-card"><div class="label">${t('withoutLE')}</div><div class="value">${fmt(origTotal)}</div></div>
+    <div class="summary-card"><div class="label">${t('lePackage')} (${leRate.toFixed(1)}%)</div><div class="value highlight">${fmt(leDuty)}</div></div>
+    <div class="summary-card"><div class="label">${t('savingsLabel')}</div><div class="value green">${fmt(savings)}</div></div>
+  `;
+  document.getElementById('tariffTable').querySelector('thead').innerHTML = `<tr><th>${t('colItem')}</th><th>${t('colWithoutLE')}</th><th>${t('colWithLE')}</th></tr>`;
+  document.getElementById('tariffTable').querySelector('tbody').innerHTML = `
+    <tr><td>${t('origTariffBreak')}</td><td>MFN ${hs.mfn}% + S.301 ${hs.s301}% + S.122 ${hs.s122}%</td><td>—</td></tr>
+    <tr><td>${t('origTotalRate')}</td><td>${origRate.toFixed(1)}%</td><td>—</td></tr>
+    <tr><td>${t('origDutyAmt')}</td><td>${fmt(origDuty)}</td><td>—</td></tr>
+    <tr style="background:#fff8e1"><td>${t('lePackageRate')}</td><td>—</td><td><strong>${leRate.toFixed(1)}%</strong></td></tr>
+    <tr style="background:#fff8e1"><td>${t('lePackageAmt')}</td><td>—</td><td>${fmt(leDuty)}</td></tr>
+    <tr class="savings"><td>${t('savingsAmt')}</td><td>—</td><td>${fmt(savings)} (${origDuty>0?(savings/origDuty*100).toFixed(1):0}%)</td></tr>
+    <tr><td>${t('brokerFee')}</td><td>${fmt(broker)}</td><td>${fmt(broker)}</td></tr>
+    <tr class="highlight-row"><td>${t('clientTotal')}</td><td>${fmt(origTotal)}</td><td><strong>${fmt(leTotal)}</strong></td></tr>
+    <tr><td>${t('totalFeeRate')}</td><td>${(origTotal/val*100).toFixed(1)}%</td><td>${(leTotal/val*100).toFixed(1)}%</td></tr>
+  `;
+  document.getElementById('tariffResult').classList.add('show');
+}
+
+// ========== DDP ==========
+function onDdpPartnerChange(side){
+  const sel = document.getElementById('ddp'+side.charAt(0).toUpperCase()+side.slice(1)+'Partner');
+  const custom = document.getElementById('ddp'+side.charAt(0).toUpperCase()+side.slice(1)+'PartnerCustom');
+  if(!sel||!custom) return;
+  if(sel.value === '__custom__'){
+    custom.style.display = '';
+    custom.focus();
+  } else {
+    custom.style.display = 'none';
+    custom.value = '';
+  }
+  calcDdp();
+}
+function getDdpPartnerName(side){
+  const prefix = 'ddp'+side.charAt(0).toUpperCase()+side.slice(1);
+  const sel = document.getElementById(prefix+'Partner');
+  const custom = document.getElementById(prefix+'PartnerCustom');
+  if(!sel) return '';
+  if(sel.value === '__custom__') return custom?.value?.trim()||'(未填写)';
+  return sel.value||'';
+}
+function calcDdp() {
+  const exw = parseFloat(document.getElementById('ddpExw').value)||0;
+  if(exw<=0){ document.getElementById('ddpResult').classList.remove('show'); return; }
+  const cnLog = parseFloat(document.getElementById('ddpCnLog').value)||0;
+  const sea = parseFloat(document.getElementById('ddpSea').value)||0;
+  const usLog = parseFloat(document.getElementById('ddpUsLog').value)||0;
+  const ins = parseFloat(document.getElementById('ddpInsurance').value)||0;
+  const hs = getHs('ddpHsSelect');
+  const leRate = hs ? hs.mfn+hs.s301*0.75+hs.s122*0.70 : 0;
+  const duty = exw*leRate/100;
+  const landed = exw+cnLog+sea+usLog+ins+duty+350;
+  const service = landed*0.05;
+  const total = landed+service;
+  const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+
+  document.getElementById('ddpCards').innerHTML = `
+    <div class="summary-card"><div class="label">${t('landedCost')}</div><div class="value">${fmt(landed)}</div></div>
+    <div class="summary-card"><div class="label">${t('serviceFee')}</div><div class="value highlight">${fmt(service)}</div></div>
+    <div class="summary-card"><div class="label">${t('clientTotalDdp')}</div><div class="value green">${fmt(total)}</div></div>
+  `;
+  const items = [[t('exw'),exw],[t('cnLogistics'),cnLog],[t('seaFreight'),sea],[t('leDuty'),duty],[t('broker'),350],[t('insurance'),ins],[t('usTrucking'),usLog]];
+  document.getElementById('ddpTable').querySelector('thead').innerHTML = `<tr><th>${t('colFee')}</th><th>${t('colAmount')}</th><th>${t('colPercent')}</th></tr>`;
+  let rows = items.map(i=>`<tr><td>${i[0]}</td><td>${fmt(i[1])}</td><td>${landed>0?(i[1]/landed*100).toFixed(1):'0'}%</td></tr>`).join('');
+  rows += `<tr style="font-weight:700;background:#f0f4ff"><td>${t('landedCost')}</td><td>${fmt(landed)}</td><td>100%</td></tr>`;
+  rows += `<tr style="font-weight:700;background:#fff8e1"><td>${t('serviceFee')}</td><td>${fmt(service)}</td><td></td></tr>`;
+  rows += `<tr style="font-weight:700;background:#e8f5e9"><td>${t('clientTotalDdp')}</td><td style="color:#2e7d32">${fmt(total)}</td><td></td></tr>`;
+  document.getElementById('ddpTable').querySelector('tbody').innerHTML = rows;
+  document.getElementById('ddpResult').classList.add('show');
+}
+
+// ========== SUBMIT ==========
+function openSubmitModal(type) {
+  const hs = type==='tariff' ? getHs('hsSelect') : getHs('ddpHsSelect');
+  if(!hs){ toast(t('selectHsFirst')); return; }
+  const cargoVal = type==='tariff' ? parseFloat(document.getElementById('cargoValue').value) : parseFloat(document.getElementById('ddpExw').value);
+  if(!cargoVal){ toast(t('fillCargo')); return; }
+  // Read user's manually-set LE rate and broker fee from main page
+  const userLeRate = parseFloat(document.getElementById('lePackageRateInput').value);
+  const userBroker = parseFloat(document.getElementById('brokerFeeInput').value)||350;
+  const formulaLeRate = hs.mfn+hs.s301*0.75+hs.s122*0.70;
+  const autoLeRate = (userLeRate>0) ? userLeRate : formulaLeRate;
+  const autoLeDuty = cargoVal*autoLeRate/100;
+  const autoBroker = userBroker;
+  const autoTotal = autoLeDuty + autoBroker;
+  const fmt=(n)=>n.toLocaleString(undefined,{maximumFractionDigits:0});
+
+  let fields = '';
+  if(type==='tariff'){
+    fields = `
+      <table class="comp-table"><tbody>
+        <tr><td style="width:50%"><strong>${hs.code} ${hs.name}</strong></td><td>—</td></tr>
+        <tr><td>${t('cargoValue')}</td><td><input type="number" id="editCargoValue" value="${cargoVal}" style="width:160px;padding:6px;border:1px solid #ddd;border-radius:6px" oninput="updateSubmitTotal()"></td></tr>
+        <tr><td>${t('lePackageRate')} (%)</td><td><input type="number" id="editLeRate" value="${autoLeRate.toFixed(1)}" step="0.1" style="width:120px;padding:6px;border:1px solid #ddd;border-radius:6px;background:#fff8e1" oninput="updateSubmitTotal()"></td></tr>
+        <tr><td>${t('lePackageAmt')} ($)</td><td><span id="editLeDutyShow">$${fmt(autoLeDuty)}</span></td></tr>
+        <tr><td>${t('brokerFee')} ($)</td><td><input type="number" id="editBroker" value="${autoBroker}" step="1" style="width:120px;padding:6px;border:1px solid #ddd;border-radius:6px" oninput="updateSubmitTotal()"></td></tr>
+        <tr style="background:#fff8e1;font-weight:700"><td>${t('clientTotal')}</td><td><span id="editTotalShow" style="color:#2e7d32;font-size:16px">$${fmt(autoTotal)}</span></td></tr>
+      </tbody></table>`;
+  } else {
+    const exw = parseFloat(document.getElementById('ddpExw').value)||0;
+    const cnLog = parseFloat(document.getElementById('ddpCnLog').value)||0;
+    const sea = parseFloat(document.getElementById('ddpSea').value)||0;
+    const usLog = parseFloat(document.getElementById('ddpUsLog').value)||0;
+    const ins = parseFloat(document.getElementById('ddpInsurance').value)||0;
+    const autoLanded = exw+cnLog+sea+usLog+ins+autoLeDuty+autoBroker;
+    const autoService = autoLanded*0.05;
+    const autoClient = autoLanded+autoService;
+    fields = `
+      <table class="comp-table"><tbody>
+        <tr><td style="width:50%"><strong>${hs.code} ${hs.name}</strong></td><td>—</td></tr>
+        <tr><td>EXW ($)</td><td><input type="number" id="editExw" value="${exw}" style="width:160px;padding:6px;border:1px solid #ddd;border-radius:6px" oninput="updateSubmitTotal()"></td></tr>
+        <tr><td>${t('cnLogistics')} ($)</td><td><input type="number" id="editCnLog" value="${cnLog}" style="width:140px;padding:6px;border:1px solid #ddd;border-radius:6px" oninput="updateSubmitTotal()"></td></tr>
+        <tr><td>${t('seaFreight')} ($)</td><td><input type="number" id="editSea" value="${sea}" style="width:140px;padding:6px;border:1px solid #ddd;border-radius:6px" oninput="updateSubmitTotal()"></td></tr>
+        <tr style="background:#fff8e1"><td>${t('lePackageRate')} (%)</td><td><input type="number" id="editLeRate" value="${autoLeRate.toFixed(1)}" step="0.1" style="width:120px;padding:6px;border:1px solid #ddd;border-radius:6px" oninput="updateSubmitTotal()"></td></tr>
+        <tr><td>${t('leDuty')} ($)</td><td><span id=\"editLeDutyShow\">$${fmt(autoLeDuty)}</span></td></tr>
+        <tr><td>${t('broker')} ($)</td><td><input type="number" id=\"editBroker\" value=\"${autoBroker}\" step=\"1\" style=\"width:120px;padding:6px;border:1px solid #ddd;border-radius:6px\" oninput=\"updateSubmitTotal()\"></td></tr>
+        <tr><td>${t('usTrucking')} ($)</td><td><input type=\"number\" id=\"editUsLog\" value=\"${usLog}\" style=\"width:140px;padding:6px;border:1px solid #ddd;border-radius:6px\" oninput=\"updateSubmitTotal()\"></td></tr>
+        <tr><td>${t('insurance')} ($)</td><td><input type=\"number\" id=\"editInsurance\" value=\"${ins}\" style=\"width:140px;padding:6px;border:1px solid #ddd;border-radius:6px\" oninput=\"updateSubmitTotal()\"></td></tr>
+        <tr style="background:#f0f4ff;font-weight:700"><td>${t('landedCost')}</td><td><span id=\"editLandedShow\">$${fmt(autoLanded)}</span></td></tr>
+        <tr style="background:#fff8e1;font-weight:700"><td>${t('serviceFee')}</td><td><span id=\"editServiceShow\">$${fmt(autoService)}</span></td></tr>
+        <tr style="background:#e8f5e9;font-weight:700"><td>${t('clientTotal')}</td><td><span id=\"editTotalShow\" style=\"color:#2e7d32;font-size:16px\">$${fmt(autoClient)}</span></td></tr>
+      </tbody></table>`;
+  }
+
+  pendingSubmit = { type, hs, cargoVal, autoLeRate };
+  document.getElementById('submitEditFields').innerHTML = fields;
+  document.getElementById('submitModal').classList.add('show');
+}
+
+function updateSubmitTotal() {
+  const t = pendingSubmit.type;
+  const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+  const ler = parseFloat(document.getElementById('editLeRate')?.value)||0;
+  const cv = parseFloat(document.getElementById(t==='tariff'?'editCargoValue':'editExw')?.value)||0;
+  const ld = cv*ler/100;
+  if(document.getElementById('editLeDutyShow')) document.getElementById('editLeDutyShow').textContent = fmt(ld);
+  if(t==='tariff'){
+    const br = parseFloat(document.getElementById('editBroker')?.value)||0;
+    const tot = ld+br;
+    document.getElementById('editTotalShow').textContent = fmt(tot);
+  } else {
+    const br = parseFloat(document.getElementById('editBroker')?.value)||0;
+    const cn = parseFloat(document.getElementById('editCnLog')?.value)||0;
+    const sea = parseFloat(document.getElementById('editSea')?.value)||0;
+    const us = parseFloat(document.getElementById('editUsLog')?.value)||0;
+    const ins = parseFloat(document.getElementById('editInsurance')?.value)||0;
+    const landed = cv+cn+sea+us+ins+ld+br;
+    const svc = landed*0.05;
+    document.getElementById('editLandedShow').textContent = fmt(landed);
+    document.getElementById('editServiceShow').textContent = fmt(svc);
+    document.getElementById('editTotalShow').textContent = fmt(landed+svc);
+  }
+}
+function closeSubmitModal() { document.getElementById('submitModal').classList.remove('show'); pendingSubmit=null; }
+
+function submitForApproval() {
+  if(!pendingSubmit) return;
+  const p = pendingSubmit;
+  const approver = document.getElementById('approverSelect').value;
+  const note = document.getElementById('submitNote').value.trim();
+  const editedLeRate = parseFloat(document.getElementById('editLeRate')?.value)||p.autoLeRate;
+  const editedBroker = parseFloat(document.getElementById('editBroker')?.value)||350;
+
+  let quote = {
+    id:'QT-'+Date.now().toString(36).toUpperCase(),
+    hs:p.hs.code, name:p.hs.name, type:p.type, approver, note, status:'pending_review',
+    submittedAt:new Date().toLocaleString(),
+    mfn:p.hs.mfn, s301:p.hs.s301, s122:p.hs.s122,
+    leRate: editedLeRate, brokerFee: editedBroker,
+  };
+
+  if(p.type==='tariff'){
+    quote.cargoValue = parseFloat(document.getElementById('editCargoValue')?.value)||p.cargoVal;
+    quote.leDuty = quote.cargoValue * editedLeRate/100;
+    quote.total = quote.leDuty + editedBroker;
+  } else {
+    const exw = parseFloat(document.getElementById('editExw')?.value)||0;
+    const cn = parseFloat(document.getElementById('editCnLog')?.value)||0;
+    const sea = parseFloat(document.getElementById('editSea')?.value)||0;
+    const us = parseFloat(document.getElementById('editUsLog')?.value)||0;
+    const ins = parseFloat(document.getElementById('editInsurance')?.value)||0;
+    const leDuty = exw * editedLeRate/100;
+    quote.exw=exw; quote.cnLog=cn; quote.sea=sea; quote.usLog=us; quote.insurance=ins;
+    quote.leDuty=leDuty;
+    quote.landedCost=exw+cn+sea+us+ins+leDuty+editedBroker;
+    quote.serviceFee=quote.landedCost*0.05;
+    quote.total=quote.landedCost+quote.serviceFee;
+    quote.cargoValue=exw;
+  }
+
+  approvalQueue.unshift(quote);
+  closeSubmitModal();
+  toast(`✅ ${t('submitted')}: ${approver}`);
+  setTimeout(()=>switchTab('approval'), 800);
+}
+
+// ========== APPROVAL ==========
+function renderApproval(filter='all') {
+  const list = filter==='all' ? approvalQueue : approvalQueue.filter(q=>q.status===filter);
+  // Also inject pending direct requests for US team visibility
+  const pendingDirect = directRequests.filter(d=>d.status==='pending');
+  const hasItems = list.length > 0 || pendingDirect.length > 0;
+  
+  if(!hasItems){
+    document.getElementById('approvalList').innerHTML = `<p style="color:rgba(255,255,255,0.5);text-align:center;padding:40px">${t('noApprovals')}</p>`;
+    return;
+  }
+  
+  let html = '';
+  
+  // Direct requests section (US team needs to respond)
+  if(pendingDirect.length > 0){
+    html += `<div style="margin-bottom:8px;font-size:13px;font-weight:700;color:#C8A45C">📋 ${t('tabDirect')} — 待美方回传</div>`;
+    pendingDirect.forEach(r=>{
+      const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+      html += `
+      <div class="approval-item pending" style="border-left:3px solid #C8A45C">
+        <div class="approval-row">
+          <span class="approval-hs">📋 ${r.hs} ${r.name}</span>
+          <span class="badge badge-pending">${t('pendingReview')}</span>
+        </div>
+        <div class="approval-row" style="margin-top:4px">
+          <span class="approval-value">${r.client}</span>
+          <span class="approval-value">EXW ${fmt(r.exw)}</span>
+          <span class="approval-value">${r.submittedAt}</span>
+        </div>
+        ${r.note?`<div style="font-size:12px;color:#999;margin-top:4px">📝 ${r.note}</div>`:''}
+        ${roleCan('respond_quote')?`<button class="btn btn-gold btn-sm" style="margin-top:8px;width:100%" onclick="event.stopPropagation();openDirectRespond('${r.id}')">📤 回传报价</button>`:''}
+      </div>`;
+    });
+    if(list.length > 0) html += `<div style="margin:12px 0;border-top:1px dashed #e0e0e0"></div>`;
+  }
+  
+  // Regular approval items
+  if(list.length > 0){
+    const statusMap = { pending_review: t('pendingReview'), approved: t('agreed'), rejected: t('disagreed'), confirmed: t('confirmedLabel') };
+    html += list.map(q=>{
+      const val = q.cargoValue || q.exw || 0;
+      return `
+      <div class="approval-item ${q.status}" onclick="openApprovalDetail('${q.id}')">
+        <div class="approval-row">
+          <span class="approval-hs">${q.hs} ${q.name}</span>
+          <span class="badge badge-${q.status==='pending_review'?'pending':q.status==='confirmed'?'approved':q.status}">${statusMap[q.status]}</span>
+        </div>
+        <div class="approval-row" style="margin-top:4px">
+          <span class="approval-value">Cargo $${val.toLocaleString()}</span>
+          <span class="approval-value">LE ${q.leRate.toFixed(1)}%</span>
+          <span class="approval-value">Total $${(q.total||0).toLocaleString()}</span>
+          <span class="approval-value">${q.approver} · ${q.submittedAt}</span>
+          ${q.status==='rejected' && q.counterOffer ? `<span class="approval-value" style="color:#dc3545">📋 还盘 $${q.counterOffer.total.toLocaleString(undefined,{maximumFractionDigits:0})}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  
+  document.getElementById('approvalList').innerHTML = html;
+}
+function filterApproval(f){ renderApproval(f); }
+
+function openApprovalDetail(id) {
+  const q = approvalQueue.find(a=>a.id===id);
+  if(!q) return;
+  const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+  const origRate = q.mfn+q.s301+q.s122;
+  const origDuty = (q.cargoValue||0)*origRate/100;
+  const savings = origDuty - (q.leDuty||0);
+  const statusMap = { pending_review: t('pendingReview'), approved: t('agreed'), rejected: t('disagreed'), confirmed: t('confirmedLabel') };
+
+  let detailRows = `
+    <tr><td>HS / Product</td><td><strong>${q.hs} ${q.name}</strong></td></tr>
+    <tr><td>${t('cargoValue')}</td><td>${fmt(q.cargoValue||0)}</td></tr>
+    <tr><td>${t('origTotalRate')}</td><td>${origRate.toFixed(1)}% — ${fmt(origDuty)}</td></tr>
+    <tr style="background:#fff8e1"><td>${t('lePackageRate')}</td><td><strong>${q.leRate.toFixed(1)}%</strong> — ${fmt(q.leDuty||0)}</td></tr>
+    <tr class="savings"><td>${t('savingsLabel')}</td><td>${fmt(savings)} (${origDuty>0?(savings/origDuty*100).toFixed(1):0}%)</td></tr>
+    <tr><td>${t('brokerFee')}</td><td>${fmt(q.brokerFee||350)}</td></tr>`;
+
+  if(q.type==='ddp'){
+    detailRows += `
+      <tr><td>${t('cnLogistics')}</td><td>${fmt(q.cnLog||0)}</td></tr>
+      <tr><td>${t('seaFreight')}</td><td>${fmt(q.sea||0)}</td></tr>
+      <tr><td>${t('usTrucking')}</td><td>${fmt(q.usLog||0)}</td></tr>
+      <tr><td>${t('insurance')}</td><td>${fmt(q.insurance||0)}</td></tr>
+      <tr style="background:#f0f4ff;font-weight:700"><td>${t('landedCost')}</td><td>${fmt(q.landedCost||0)}</td></tr>
+      <tr style="background:#fff8e1;font-weight:700"><td>${t('serviceFee')}</td><td>${fmt(q.serviceFee||0)}</td></tr>`;
+  }
+
+  detailRows += `
+    <tr style="background:#e8f5e9;font-weight:700"><td>🔥 ${t('clientTotal')}</td><td style="color:#2e7d32;font-size:16px">${fmt(q.total||0)}</td></tr>
+    <tr><td>${t('tabApproval').replace('✅ ','')}</td><td>${q.type==='tariff'?t('tariffQuote'):t('ddpQuote')}</td></tr>
+    <tr><td>${t('selectApprover')}</td><td>${q.approver}</td></tr>
+    <tr><td>${t('note')}</td><td>${q.note||'—'}</td></tr>
+    <tr><td style="font-weight:700">Status</td><td><span class="badge badge-${q.status==='pending_review'?'pending':q.status==='confirmed'?'approved':q.status}">${statusMap[q.status]}</span></td></tr>
+    ${q.status==='rejected' && q.counterOffer ? `
+    <tr><td colspan="2" style="padding:0"><div style="background:#fff8e1;border-left:3px solid #dc3545;padding:12px;margin:8px 0;border-radius:6px">
+      <strong style="color:#dc3545">📋 ${t('counterOfferSummary')}:</strong><br>
+      ${t('lePackageRate')}: <strong style="color:#2e7d32">${q.counterOffer.leRate.toFixed(1)}%</strong> — $${(q.counterOffer.duty||0).toLocaleString(undefined,{maximumFractionDigits:0})}<br>
+      ${t('brokerFee')}: <strong>$${(q.counterOffer.brokerFee||0).toLocaleString()}</strong><br>
+      ${q.counterOffer.usLog!==undefined ? t('usTrucking')+': $'+q.counterOffer.usLog.toLocaleString()+'<br>' : ''}
+      ${q.counterOffer.sea!==undefined ? t('seaFreight')+': $'+q.counterOffer.sea.toLocaleString()+'<br>' : ''}
+      🔥 ${t('counterOfferTotal')}: <strong style="color:#2e7d32;font-size:15px">$${q.counterOffer.total.toLocaleString(undefined,{maximumFractionDigits:0})}</strong><br>
+      ${t('rejectReason')}: <em style="color:#666">${q.rejectReason}</em>
+    </div></td></tr>` : ''}
+  `;
+
+  document.getElementById('approvalDetailContent').innerHTML = `
+    <h3>${t('quoteDetail')}: ${q.hs} ${q.name}</h3>
+    <table class="comp-table"><tbody>${detailRows}</tbody></table>
+    ${q.status==='pending_review'?`
+    <div class="approval-actions">
+      <button class="btn btn-primary" onclick="actOnApproval('${q.id}','approved')">🤝 ${t('agreeBtn')}</button>
+      <button class="btn" style="background:#dc3545;color:white" onclick="actOnApproval('${q.id}','rejected')">✋ ${t('disagreeBtn')}</button>
+      <p style="color:#999;font-size:12px;margin-top:8px">${t('approvalHint')}</p>
+    </div>`:(q.status==='approved'&&roleCan('submit_quote')?`
+    <div class="approval-actions">
+      <button class="btn btn-gold" onclick="confirmDeal('${q.id}','quote')" style="width:100%">🎯 ${t('confirmDealBtn')}</button>
+      <p style="color:#999;font-size:12px;margin-top:8px;text-align:center">${t('confirmDealHint')}</p>
+    </div>`:`<p style="color:#999;margin-top:16px;text-align:center">${q.status==='confirmed'?t('confirmedLabel'):q.status==='approved'?t('agreed'):t('disagreed')}</p>`)}
+  `;
+  document.getElementById('approvalDetailModal').classList.add('show');
+}
+
+function actOnApproval(id, newStatus) {
+  const q = approvalQueue.find(a=>a.id===id);
+  if(!q) return;
+  if(newStatus==='rejected'){
+    // Open counter-offer modal — must fill acceptable numbers
+    openCounterOfferModal(q);
+    return;
+  }
+  q.status = 'approved';
+  document.getElementById('approvalDetailModal').classList.remove('show');
+  toast(`🤝 ${t('agreed')} — ${q.hs} ${q.name}`);
+  renderApproval();
+}
+
+// ========== CONFIRM DEAL (CN clicks after US approves/responds) ==========
+function confirmDeal(id, type){
+  if(type==='quote'){
+    const q = approvalQueue.find(a=>a.id===id);
+    if(!q) return;
+    q.status = 'confirmed';
+    document.getElementById('approvalDetailModal').classList.remove('show');
+    toast(`🎯 ${t('confirmedLabel')} — ${q.hs} ${q.name} | 收入 $${(q.total||0).toLocaleString()}`);
+    renderApproval();
+    renderDashboard();
+  } else if(type==='direct'){
+    const r = directRequests.find(d=>d.id===id);
+    if(!r) return;
+    r.status = 'confirmed';
+    toast(`🎯 ${t('confirmedLabel')} — ${r.hs} ${r.name} | 收入 $${(r.response?.total||0).toLocaleString()}`);
+    renderDirectRequests();
+    renderDashboard();
+  }
+}
+
+let counterOfferTarget = null;
+function openCounterOfferModal(q) {
+  counterOfferTarget = q;
+  const fmt=(n)=>n.toLocaleString(undefined,{maximumFractionDigits:0});
+  const cargoVal = q.cargoValue || q.exw || 0;
+  let fields = `
+    <table class="comp-table"><tbody>
+      <tr><td style="width:50%"><strong>${q.hs} ${q.name}</strong></td><td>—</td></tr>
+      <tr><td>${t('cargoValue')}</td><td>$${fmt(cargoVal)}</td></tr>
+      <tr style="background:#ffe0e0"><td>中方 LE打包关税率</td><td><strong>${q.leRate.toFixed(1)}% — $${fmt(q.leDuty||0)}</strong></td></tr>
+      <tr style="background:#fff8e1"><td>${t('counterOfferLeRate')}</td>
+        <td><input type="number" id="coLeRate" value="${q.leRate.toFixed(1)}" step="0.1" style="width:120px;padding:6px;border:2px solid #dc3545;border-radius:6px;font-weight:700;font-size:16px" oninput="updateCounterTotal()"></td></tr>
+      <tr style="background:#fff8e1"><td>${t('counterOfferBroker')}</td>
+        <td><input type="number" id="coBroker" value="${q.brokerFee||350}" step="1" style="width:120px;padding:6px;border:2px solid #dc3545;border-radius:6px;font-weight:700" oninput="updateCounterTotal()"></td></tr>`;
+
+  if(q.type==='ddp'){
+    fields += `
+      <tr style="background:#fff8e1"><td>${t('usTrucking')} ($)</td>
+        <td><input type="number" id="coUsLog" value="${q.usLog||0}" step="0.01" style="width:140px;padding:6px;border:2px solid #dc3545;border-radius:6px" oninput="updateCounterTotal()"></td></tr>
+      <tr style="background:#fff8e1"><td>${t('seaFreight')} ($)</td>
+        <td><input type="number" id="coSea" value="${q.sea||0}" step="0.01" style="width:140px;padding:6px;border:2px solid #dc3545;border-radius:6px" oninput="updateCounterTotal()"></td></tr>`;
+  }
+
+  // Auto-compute initial total
+  const coDuty = cargoVal * q.leRate / 100;
+  const coTotal = coDuty + (q.brokerFee||350);
+  fields += `
+      <tr style="background:#e8f5e9;font-weight:700;font-size:15px"><td>🔥 ${t('counterOfferTotal')}</td>
+        <td><span id="coTotalShow" style="color:#2e7d32;font-size:16px">$${fmt(coTotal)}</span></td></tr>
+    </tbody></table>`;
+
+  document.getElementById('counterOfferFields').innerHTML = fields;
+  document.getElementById('rejectReason').value = '';
+  document.getElementById('counterOfferModal').classList.add('show');
+}
+
+function updateCounterTotal(){
+  const q = counterOfferTarget; if(!q) return;
+  const cv = q.cargoValue || q.exw || 0;
+  const ler = parseFloat(document.getElementById('coLeRate')?.value)||0;
+  const br = parseFloat(document.getElementById('coBroker')?.value)||0;
+  const ld = cv*ler/100;
+  let tot = ld+br;
+  const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+  if(q.type==='ddp'){
+    const us = parseFloat(document.getElementById('coUsLog')?.value)||0;
+    const sea = parseFloat(document.getElementById('coSea')?.value)||0;
+    tot = tot+us+sea;
+  }
+  document.getElementById('coTotalShow').textContent = fmt(tot);
+}
+
+function submitCounterOffer(){
+  const q = counterOfferTarget; if(!q) return;
+  const reason = document.getElementById('rejectReason').value.trim();
+  if(!reason){ toast(t('rejectReason')+' ❗'); return; }
+  const coLeRate = parseFloat(document.getElementById('coLeRate')?.value);
+  const coBroker = parseFloat(document.getElementById('coBroker')?.value);
+  if(isNaN(coLeRate)||coLeRate<=0||isNaN(coBroker)){ toast('请填写有效的还盘数据 ❗'); return; }
+  const cv = q.cargoValue || q.exw || 0;
+  const coDuty = cv * coLeRate / 100;
+  let coTotal = coDuty + coBroker;
+  let coUsLog=0, coSea=0;
+  if(q.type==='ddp'){
+    coUsLog = parseFloat(document.getElementById('coUsLog')?.value)||0;
+    coSea = parseFloat(document.getElementById('coSea')?.value)||0;
+    coTotal += coUsLog + coSea;
+  }
+  // === BUSINESS LOGIC CHECK ===
+  // 中方利润 = 货值×5% | 终端客户报价 = 原始关税×80% | 美方报价 ≤ 终端客户报价 - 中方利润
+  const origDuty = cv * origRate / 100;
+  const cnMinProfit = cv * 0.05;                // 中方利润底线
+  const clientCeiling = origDuty * 0.80;         // 终端客户报价上限 = 关税成本×80%
+  const usMax = clientCeiling - cnMinProfit;     // 美方报价上限
+  const usActual = coDuty + coBroker;            // 美方实际报价
+  const excessAmount = usActual - usMax;         // 超出部分（负数=合规）
+
+  if(excessAmount > 0){
+    // Threshold not met → force explanation
+    pendingProfitData = {
+      type:'counter', quote:q, coLeRate, coBroker, coDuty, coTotal, reason,
+      coUsLog: q.type==='ddp'?coUsLog:undefined, coSea: q.type==='ddp'?coSea:undefined,
+      origRate, origDuty, usMax, usActual, cnMinProfit, clientCeiling, excessAmount
+    };
+    const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+    document.getElementById('profitCheckBody').innerHTML = `
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+        <tr><td style="padding:4px 8px;color:#999">货值</td><td>${fmt(cv)}</td></tr>
+        <tr><td style="padding:4px 8px;color:#999">原始关税 (${origRate.toFixed(1)}%)</td><td>${fmt(origDuty)}</td></tr>
+        <tr><td style="padding:4px 8px;color:#999">LE 打包关税 (${coLeRate.toFixed(1)}%)</td><td>${fmt(coDuty)}</td></tr>
+        <tr style="background:#e8f5e9"><td style="padding:4px 8px"><strong>终端客户报价上限 (关税×80%)</strong></td><td><strong>${fmt(clientCeiling)}</strong></td></tr>
+        <tr style="background:#fff8e1"><td style="padding:4px 8px">　− 中方利润底线 (货值5%)</td><td>${fmt(cnMinProfit)}</td></tr>
+        <tr style="background:#e8f5e9"><td style="padding:4px 8px"><strong>🔒 美方报价上限</strong></td><td><strong style="font-size:15px">${fmt(usMax)}</strong></td></tr>
+        <tr style="background:#fce4ec"><td style="padding:4px 8px;color:#dc3545;font-weight:700">⚠️ 美方实际报价</td><td style="color:#dc3545;font-weight:700;font-size:15px">${fmt(usActual)}</td></tr>
+        <tr style="background:#fce4ec"><td style="padding:4px 8px;color:#dc3545;font-weight:700">🔥 超出上限</td><td style="color:#dc3545;font-weight:700;font-size:15px">+${fmt(excessAmount)}</td></tr>
+      </table>
+      <p style="color:#dc3545;font-weight:700;margin-top:8px">${t('profitCheckWarning')}</p>`;
+    document.getElementById('profitExplain').value = '';
+    closeCounterOfferModal();
+    document.getElementById('approvalDetailModal').classList.remove('show');
+    document.getElementById('profitCheckModal').classList.add('show');
+    return;
+  }
+  // Threshold OK → submit normally
+  doSubmitCounterOffer(q, coLeRate, coBroker, coDuty, coTotal, reason, coUsLog, coSea);
+}
+function doSubmitCounterOffer(q, coLeRate, coBroker, coDuty, coTotal, reason, coUsLog, coSea){
+  q.status = 'rejected';
+  q.rejectReason = reason;
+  q.counterOffer = { leRate: coLeRate, brokerFee: coBroker, duty: coDuty, total: coTotal };
+  if(q.type==='ddp'){ q.counterOffer.usLog = coUsLog||0; q.counterOffer.sea = coSea||0; }
+  closeCounterOfferModal();
+  document.getElementById('approvalDetailModal').classList.remove('show');
+  toast(`✋ ${t('disagreed')} — ${q.hs} ${q.name} | 还盘已提交`);
+  renderApproval();
+}
+
+function closeCounterOfferModal(){ document.getElementById('counterOfferModal').classList.remove('show'); counterOfferTarget=null; }
+
+// ========== FILE UPLOAD / DOWNLOAD ==========
+let uploadedFiles = []; // {id, hsCode, docType, name, size, type, blobURL, uploadedAt}
+
+function openUploadDialog(){
+  // Populate HS dropdown
+  const sel = document.getElementById('uploadHsSelect');
+  sel.innerHTML = '<option value="">— 选择 HS 编码 —</option>';
+  hsData.forEach(h=>{ sel.innerHTML += `<option value="${h.code}">${h.code} ${typeof h.name==='function'?h.name():h.name}</option>`; });
+  // Also add quotes from approval queue
+  approvalQueue.forEach(q=>{
+    if(!sel.innerHTML.includes(q.hs)) sel.innerHTML += `<option value="${q.hs}">${q.hs} ${q.name}</option>`;
+  });
+  document.getElementById('uploadHsCustom').value = '';
+  document.getElementById('fileUploadInput').value = '';
+  document.getElementById('uploadDialog').classList.add('show');
+}
+
+function refreshQuoteFilter(){
+  const sel = document.getElementById('fileQuoteFilter');
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">— 全部文件 —</option>';
+  // Group by HS code
+  const seen = new Set();
+  uploadedFiles.forEach(f=>{
+    if(!seen.has(f.hsCode) && f.hsCode!=='—'){
+      seen.add(f.hsCode);
+      sel.innerHTML += `<option value="${f.hsCode}">HS: ${f.hsCode}</option>`;
+    }
+  });
+  approvalQueue.forEach(q=>{
+    if(!seen.has(q.hs)){
+      seen.add(q.hs);
+      sel.innerHTML += `<option value="${q.hs}">HS: ${q.hs} — ${q.name}</option>`;
+    }
+  });
+  sel.value = currentVal;
+}
+
+function handleFileUpload(event){
+  const files = event.target.files;
+  if(!files.length) return;
+  const hsSelect = document.getElementById('uploadHsSelect').value;
+  const hsCustom = document.getElementById('uploadHsCustom').value.trim();
+  const hsCode = hsCustom || hsSelect || '—';
+  const docType = document.getElementById('uploadDocType').value;
+  Array.from(files).forEach(file => {
+    const blobURL = URL.createObjectURL(file);
+    uploadedFiles.push({
+      id: 'FILE-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,6),
+      hsCode, docType, name: file.name,
+      size: file.size,
+      type: file.type,
+      blobURL,
+      uploadedAt: new Date().toLocaleString()
+    });
+  });
+  event.target.value = '';
+  document.getElementById('uploadDialog').classList.remove('show');
+  refreshQuoteFilter();
+  renderFiles();
+  toast(`📎 ${files.length} ${t('filesUploaded')}`);
+}
+
+function deleteFile(id){
+  if(!confirm(t('deleteFileConfirm'))) return;
+  const idx = uploadedFiles.findIndex(f=>f.id===id);
+  if(idx>=0){
+    URL.revokeObjectURL(uploadedFiles[idx].blobURL);
+    uploadedFiles.splice(idx,1);
+  }
+  renderFiles();
+  toast('🗑️ '+t('fileDeleted'));
+}
+
+function previewFile(id){
+  const f = uploadedFiles.find(x=>x.id===id);
+  if(!f) return;
+  const sizeKB = (f.size/1024).toFixed(1);
+  const isPDF = f.type==='application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+  const isImage = f.type.startsWith('image/');
+  let content = `<h3 style="margin-bottom:12px">📄 ${f.name}</h3>
+    <p style="color:#999;font-size:12px;margin-bottom:16px">${f.docType} · ${sizeKB}KB · ${f.uploadedAt}</p>`;
+  if(isPDF){
+    content += `<iframe src="${f.blobURL}" style="width:100%;height:70vh;border:none;border-radius:8px"></iframe>`;
+  } else if(isImage){
+    content += `<img src="${f.blobURL}" style="max-width:100%;max-height:70vh;border-radius:8px">`;
+  } else {
+    content += `<p style="text-align:center;color:#999;padding:40px">${t('previewNotAvailable')}<br><a href="${f.blobURL}" download="${f.name}" style="color:#0D2B5E">${t('downloadFile')}</a></p>`;
+  }
+  content += `<div style="margin-top:12px;text-align:right"><a href="${f.blobURL}" download="${f.name}" class="btn btn-primary">⬇ ${t('downloadFile')}</a> <button class="btn" style="background:#eee" onclick="document.getElementById('filePreviewModal').classList.remove('show')">${t('close')}</button></div>`;
+  document.getElementById('filePreviewContent').innerHTML = content;
+  document.getElementById('filePreviewModal').classList.add('show');
+}
+
+function renderFiles(){
+  const filter = document.getElementById('fileQuoteFilter')?.value || '';
+  let list = uploadedFiles;
+  if(filter) list = list.filter(f=>f.hsCode===filter);
+  if(!list.length){
+    document.getElementById('fileList').innerHTML = `<p style="color:rgba(255,255,255,0.5);text-align:center;padding:40px" data-i18n="noFiles">${t('noFiles')}</p>`;
+    return;
+  }
+  document.getElementById('fileList').innerHTML = list.map(f=>{
+    const sizeStr = f.size<1024 ? f.size+'B' : f.size<1048576 ? (f.size/1024).toFixed(1)+'KB' : (f.size/1048576).toFixed(1)+'MB';
+    return `<div class="file-item" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:white;border:1px solid #eee;border-radius:8px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:24px">${f.type.startsWith('image/')?'🖼️':f.type==='application/pdf'?'📄':'📎'}</span>
+        <div>
+          <div style="font-weight:600">${f.name}</div>
+          <div style="font-size:12px;color:#999">${f.docType} · ${sizeStr} · ${f.uploadedAt} · ${f.hsCode!=='—'?'🔗 HS: '+f.hsCode:''}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" style="background:#e3f2fd;color:#0D2B5E" onclick="previewFile('${f.id}')" data-i18n="preview">👁 预览</button>
+        <a href="${f.blobURL}" download="${f.name}" class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;text-decoration:none;padding:6px 12px;border-radius:6px" data-i18n="downloadFile">⬇ 下载</a>
+        ${roleCan('upload_files')?`<button class="btn btn-sm" style="background:#fce4ec;color:#c62828" onclick="deleteFile('${f.id}')">🗑</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ========== DIRECT QUOTE (报价逻辑二) ==========
+let directRequests = []; // {id, hs, name, client, exw, weight, note, status, submittedAt, response}
+
+function submitDirectRequest(){
+  const hsEl = document.getElementById('directHsSelect');
+  const code = hsEl.value;
+  if(!code){ toast(t('selectHsFirst')); return; }
+  const opt = hsEl.options[hsEl.selectedIndex];
+  const name = opt.textContent.replace(/^[\d.]+ /,'');
+  const client = document.getElementById('directClient').value.trim();
+  const exw = parseFloat(document.getElementById('directExw').value)||0;
+  const weight = parseFloat(document.getElementById('directWeight').value)||0;
+  const note = document.getElementById('directNote').value.trim();
+  if(!client||exw<=0){ toast('客户名称和EXW价格必填'); return; }
+  directRequests.unshift({
+    id: 'DR-'+Date.now().toString(36).toUpperCase(),
+    hs: code, name, client, exw, weight, note, status: 'pending',
+    submittedAt: new Date().toLocaleString(), response: null
+  });
+  document.getElementById('directClient').value = '';
+  document.getElementById('directExw').value = '';
+  document.getElementById('directWeight').value = '';
+  document.getElementById('directNote').value = '';
+  renderDirectRequests();
+  toast(`📤 ${t('directSubmitted')}: ${code} — ${client}`);
+}
+
+function renderDirectRequests(){
+  const el = document.getElementById('directRequestList');
+  if(!el) return;
+  if(!directRequests.length){
+    el.innerHTML = `<p style="color:rgba(255,255,255,0.5);text-align:center;padding:40px" data-i18n="noDirectRequests">${t('noDirectRequests')}</p>`;
+    return;
+  }
+  el.innerHTML = directRequests.map(r=>{
+    const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+    const hasResp = r.status==='responded' && r.response;
+    const isConfirmed = r.status==='confirmed';
+    return `<div class="approval-item ${r.status}">
+      <div class="approval-row">
+        <span class="approval-hs">${r.hs} ${r.name}</span>
+        <span class="badge badge-${r.status==='pending'?'pending':r.status==='confirmed'?'approved':'approved'}">${r.status==='pending'?t('pendingReview'):r.status==='confirmed'?t('confirmedLabel'):t('responded')}</span>
+      </div>
+      <div class="approval-row" style="margin-top:4px">
+        <span class="approval-value">${r.client}</span>
+        <span class="approval-value">EXW ${fmt(r.exw)}</span>
+        <span class="approval-value">${r.submittedAt}</span>
+      </div>
+      ${r.note?`<div style="font-size:12px;color:#999;margin-top:4px">📝 ${r.note}</div>`:''}
+      ${hasResp?`<div style="background:#e8f5e9;padding:10px;margin-top:8px;border-radius:6px;font-size:13px">
+        <strong>📋 ${t('directRespondTitle')}:</strong><br>
+        LE ${r.response.leRate.toFixed(1)}% ($${fmt(r.response.duty||0)}) | Broker ${fmt(r.response.broker||0)}<br>
+        🔥 Total: <strong style="color:#2e7d32;font-size:15px">${fmt(r.response.total)}</strong>
+        ${r.response.note?`<br>📝 ${r.response.note}`:''}
+        ${roleCan('submit_cost')?`<div style="margin-top:8px"><button class="btn btn-gold btn-sm" onclick="event.stopPropagation();confirmDeal('${r.id}','direct')" style="width:100%">🎯 ${t('confirmDealBtn')}</button><p style="color:#999;font-size:11px;margin-top:4px">${t('confirmDealHint')}</p></div>`:''}
+      </div>`:isConfirmed?`<div style="background:#e8f5e9;padding:10px;margin-top:8px;border-radius:6px;font-size:13px">
+        <strong>🎯 ${t('confirmedLabel')}:</strong> ${fmt(r.response?.total||0)}
+      </div>`:`${roleCan('respond_quote')?`<button class="btn btn-gold btn-sm" style="margin-top:8px;width:100%" onclick="event.stopPropagation();openDirectRespond('${r.id}')">📤 回传报价</button>`:''}`}
+    </div>`;
+  }).join('');
+}
+
+function openDirectRespond(id){
+  if(!roleCan('respond_quote')){ toast('美方角色才能回传报价'); return; }
+  const r = directRequests.find(d=>d.id===id);
+  if(!r) return;
+  document.getElementById('directRespondInfo').textContent = `${r.hs} ${r.name} | ${r.client} | EXW $${r.exw.toLocaleString()}`;
+  const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('directRespondFields').innerHTML = `
+    <table class="comp-table"><tbody>
+      <tr><td style="width:50%">EXW / Cargo Value</td><td>${fmt(r.exw)}</td></tr>
+      <tr style="background:#fff8e1"><td><strong>🔥 LE 打包关税率 (%)</strong></td>
+        <td><input type="number" id="drLeRate" value="25" step="0.1" style="width:120px;padding:6px;border:2px solid #0D2B5E;border-radius:6px;font-weight:700;font-size:15px" oninput="updateDirectRespondTotal(${r.exw})"></td></tr>
+      <tr style="background:#fff8e1"><td><strong>海关经纪人费 ($)</strong></td>
+        <td><input type="number" id="drBroker" value="350" step="1" style="width:120px;padding:6px;border:2px solid #0D2B5E;border-radius:6px" oninput="updateDirectRespondTotal(${r.exw})"></td></tr>
+      <tr style="background:#e8f5e9;font-weight:700;font-size:15px"><td>🔥 ${t('clientTotal')}</td>
+        <td><span id="drTotalShow" style="color:#2e7d32;font-size:16px">${fmt(r.exw*0.25+350)}</span></td></tr>
+      <tr><td>备注</td><td><input id="drNote" placeholder="e.g. 海运2周到LA"></td></tr>
+    </tbody></table>`;
+  document.getElementById('directRespondModal').classList.add('show');
+}
+
+function updateDirectRespondTotal(exw){
+  const ler = parseFloat(document.getElementById('drLeRate')?.value)||0;
+  const br = parseFloat(document.getElementById('drBroker')?.value)||0;
+  const duty = exw*ler/100;
+  document.getElementById('drTotalShow').textContent = '$'+(duty+br).toLocaleString(undefined,{maximumFractionDigits:0});
+}
+
+function submitDirectResponse(){
+  const modal = document.getElementById('directRespondModal');
+  if(!modal.classList.contains('show')) return;
+  const info = document.getElementById('directRespondInfo').textContent;
+  const r = directRequests.find(d=>info.includes(d.hs) && info.includes(d.client.split('|')[0].trim()));
+  if(!r) return;
+  const leRate = parseFloat(document.getElementById('drLeRate')?.value)||0;
+  const broker = parseFloat(document.getElementById('drBroker')?.value)||0;
+  const note = document.getElementById('drNote')?.value||'';
+  if(leRate<=0){ toast('请填写 LE 打包关税率'); return; }
+  // === BUSINESS LOGIC CHECK ===
+  // 中方利润 = 货值×5% | 终端客户报价 = 原始关税×80% | 美方报价 ≤ 终端客户报价 - 中方利润
+  const hsEntry = hsData.find(h=>h.code===r.hs);
+  const origRate = hsEntry ? (hsEntry.mfn + hsEntry.s301 + hsEntry.s122) : 0;
+  const origDuty = r.exw * origRate / 100;
+  const leDuty = r.exw * leRate / 100;
+  const cnMinProfit = r.exw * 0.05;             // 中方利润底线
+  const clientCeiling = origDuty * 0.80;         // 终端客户报价上限 = 原始关税×80%
+  const usMax = clientCeiling - cnMinProfit;     // 美方报价上限
+  const usActual = leDuty + broker;              // 美方实际报价
+  const excessAmount = usActual - usMax;         // 超出上限（负数=合规）
+
+  if(excessAmount > 0){
+    // Threshold not met → force explanation
+    pendingProfitData = { type:'direct', request:r, leRate, broker, leDuty, total:leDuty+broker, note, origRate, origDuty, usMax, usActual, cnMinProfit, clientCeiling, excessAmount };
+    const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
+    document.getElementById('profitCheckBody').innerHTML = `
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+        <tr><td style="padding:4px 8px;color:#999">货值</td><td>${fmt(r.exw)}</td></tr>
+        <tr><td style="padding:4px 8px;color:#999">原始关税 (${origRate.toFixed(1)}%)</td><td>${fmt(origDuty)}</td></tr>
+        <tr style="background:#e8f5e9"><td style="padding:4px 8px"><strong>终端客户报价上限 (关税×80%)</strong></td><td><strong>${fmt(clientCeiling)}</strong></td></tr>
+        <tr style="background:#fff8e1"><td style="padding:4px 8px">　− 中方利润底线 (货值5%)</td><td>${fmt(cnMinProfit)}</td></tr>
+        <tr style="background:#e8f5e9"><td style="padding:4px 8px"><strong>🔒 美方报价上限</strong></td><td><strong style="font-size:15px">${fmt(usMax)}</strong></td></tr>
+        <tr style="background:#fce4ec"><td style="padding:4px 8px;color:#dc3545;font-weight:700">⚠️ 美方实际报价</td><td style="color:#dc3545;font-weight:700;font-size:15px">${fmt(usActual)}</td></tr>
+        <tr style="background:#fce4ec"><td style="padding:4px 8px;color:#dc3545;font-weight:700">🔥 超出上限</td><td style="color:#dc3545;font-weight:700;font-size:15px">+${fmt(excessAmount)}</td></tr>
+      </table>
+      <p style="color:#dc3545;font-weight:700;margin-top:8px">${t('profitCheckWarning')}</p>`;
+    document.getElementById('profitExplain').value = '';
+    modal.classList.remove('show');
+    document.getElementById('profitCheckModal').classList.add('show');
+    return;
+  }
+  // Threshold OK → submit directly
+  doSubmitDirectResponse(r, leRate, broker, note, leDuty);
+}
+function doSubmitDirectResponse(r, leRate, broker, note, leDuty){
+  r.response = { leRate, broker, duty: leDuty||(r.exw*leRate/100), total: (leDuty||(r.exw*leRate/100))+broker, note };
+  r.status = 'responded';
+  renderDirectRequests();
+  toast(`📋 ${t('directResponded')}: ${r.hs} ${r.name}`);
+}
+
+let pendingProfitData = null;
+function confirmProfitOverride(){
+  const explain = document.getElementById('profitExplain').value.trim();
+  if(!explain){ toast('⚠️ 必须填写说明原因'); return; }
+  const d = pendingProfitData;
+  if(!d) return;
+  if(d.type==='direct'){
+    const r = d.request;
+    r.response = { leRate: d.leRate, broker: d.broker, duty: d.leDuty, total: d.total, note: d.note, profitExplain: explain };
+    r.status = 'responded';
+    renderDirectRequests();
+    toast(`⚠️ ${t('directResponded')}: ${r.hs} ${r.name} (已附说明)`);
+  } else if(d.type==='counter'){
+    const q = d.quote;
+    q.status = 'rejected';
+    q.rejectReason = (d.reason||'') + ' | [利润不足说明] ' + explain;
+    q.counterOffer = { leRate: d.coLeRate, brokerFee: d.coBroker, duty: d.coDuty, total: d.coTotal };
+    q.counterOffer.profitExplain = explain;
+    document.getElementById('approvalDetailModal').classList.remove('show');
+    renderApproval();
+    toast(`✋ ${t('disagreed')} — ${q.hs} ${q.name} (已附说明)`);
+  }
+  document.getElementById('profitCheckModal').classList.remove('show');
+  pendingProfitData = null;
+}
+function cancelProfitCheck(){
+  document.getElementById('profitCheckModal').classList.remove('show');
+  pendingProfitData = null;
+}
+
+// ========== HISTORY + EXPORT ==========
+function getAllQuotes(){
+  // Merge all quote sources into unified history list
+  let all = [];
+  approvalQueue.forEach(q=>{
+    all.push({
+      date: q.submittedAt, type: q.type==='tariff'?t('tariffQuote'):t('ddpQuote'),
+      hs: q.hs, name: q.name, client: q.approver||'', cargo: q.cargoValue||q.exw||0,
+      leRate: q.leRate, total: q.total||0, status: q.status, id: q.id
+    });
+  });
+  directRequests.forEach(r=>{
+    all.push({
+      date: r.submittedAt, type: t('tabDirect'), hs: r.hs, name: r.name,
+      client: r.client, cargo: r.exw||0,
+      leRate: (r.response||{}).leRate||0, total: (r.response||{}).total||0,
+      status: r.status, id: r.id
+    });
+  });
+  return all.sort((a,b)=>b.date.localeCompare(a.date));
+}
+
+function filterByDateRange(quotes){
+  const from = document.getElementById('histDateFrom')?.value;
+  const to = document.getElementById('histDateTo')?.value;
+  if(!from && !to) return quotes;
+  return quotes.filter(q=>{
+    // date format: "2026/6/15 10:30:00" or similar localized
+    const d = new Date(q.date);
+    if(isNaN(d.getTime())) return true;
+    if(from && d < new Date(from+'T00:00:00')) return false;
+    if(to && d > new Date(to+'T23:59:59')) return false;
+    return true;
+  });
+}
+
+function renderHistory(){
+  const search = (document.getElementById('histSearch')?.value||'').toLowerCase();
+  const typeF = document.getElementById('histType')?.value||'all';
+  const statusF = document.getElementById('histStatus')?.value||'all';
+  let quotes = getAllQuotes();
+  // Date range filter
+  quotes = filterByDateRange(quotes);
+  // Keyword filter (partial match — "80" matches "801234567")
+  if(search) quotes = quotes.filter(q=>
+    q.hs.toLowerCase().includes(search) ||
+    q.name.toLowerCase().includes(search) ||
+    q.client.toLowerCase().includes(search) ||
+    String(q.cargo).includes(search) ||
+    q.date.includes(search)
+  );
+  if(typeF!=='all') quotes = quotes.filter(q=>{
+    if(typeF==='tariff') return q.type===t('tariffQuote');
+    if(typeF==='ddp') return q.type===t('ddpQuote');
+    if(typeF==='direct') return q.type===t('tabDirect');
+    return true;
+  });
+  if(statusF!=='all') quotes = quotes.filter(q=>q.status===statusF);
+
+  const fmt = (n)=>'$'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
+  const statusLabel = {
+    pending_review: t('pendingReview'), approved: t('agreed'),
+    rejected: t('disagreed'), pending: t('pendingReview'), responded: t('responded'), confirmed: t('confirmedLabel')
+  };
+  const statusClass = { pending_review:'pending', approved:'approved', rejected:'rejected', pending:'pending', responded:'approved', confirmed:'approved' };
+
+  if(!quotes.length){
+    document.getElementById('historyBody').innerHTML = '<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">无匹配数据</td></tr>';
+    return;
+  }
+  document.getElementById('historyBody').innerHTML = quotes.map(q=>`
+    <tr>
+      <td style="font-size:12px">${q.date}</td>
+      <td><span style="font-size:11px;color:#666">${q.type}</span></td>
+      <td style="font-weight:600">${q.hs}</td>
+      <td>${q.name}</td>
+      <td>${q.client}</td>
+      <td>${fmt(q.cargo)}</td>
+      <td>${q.leRate?q.leRate.toFixed(1)+'%':'—'}</td>
+      <td style="font-weight:600;color:#0D2B5E">${q.total?fmt(q.total):'—'}</td>
+      <td><span class="badge badge-${statusClass[q.status]||'pending'}">${statusLabel[q.status]||q.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function exportHistory(){
+  let quotes = getAllQuotes();
+  quotes = filterByDateRange(quotes);
+  const search = (document.getElementById('histSearch')?.value||'').toLowerCase();
+  if(search) quotes = quotes.filter(q=>
+    q.hs.toLowerCase().includes(search)||q.name.toLowerCase().includes(search)||q.client.toLowerCase().includes(search)||String(q.cargo).includes(search)||q.date.includes(search)
+  );
+  if(!quotes.length){ toast('没有可导出的数据'); return; }
+  const statusLabel = { pending_review:'待审批', approved:'已同意', rejected:'已拒绝', pending:'待回传', responded:'已回传', confirmed:'已成交' };
+  let csv = '\uFEFF日期,类型,HS编码,商品,客户/审批人,货值($),LE税率(%),总费用($),状态\n';
+  quotes.forEach(q=>{
+    csv += [q.date, q.type, q.hs, '"'+q.name+'"', '"'+q.client+'"', q.cargo||0, q.leRate?q.leRate.toFixed(1):'', q.total||0, statusLabel[q.status]||q.status].join(',') + '\n';
+  });
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'LE_历史报价_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+  toast(`📥 导出 ${quotes.length} 条报价`);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ========== MODAL CLOSE ==========
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});});
+
+// ========== INIT ==========
+roleApplyUI();
+
+// ========== PWA Service Worker ==========
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
