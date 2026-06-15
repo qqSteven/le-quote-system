@@ -894,6 +894,7 @@ const I18N = {
     notifEnabled:"✅ 已开启 — 审批状态变化将实时推送", notifDisabled:"🔕 未开启 — 点击按钮启用推送通知",
     notifDenied:"⚠️ 通知权限被拒绝，请在浏览器设置中开启", notifNotSupported:"⚠️ 当前浏览器不支持推送通知",
     notifTestTitle:"LE 报价系统", notifTestBody:"🧪 这是一条测试推送！推送功能运行正常。",
+    notifNative:"🔔 原生通知已就绪 — 审批报价状态变化会自动推送",
     tabDashboard:"📊 看板", tabClients:"👥 客户", dashboardTitle:"📊 运营看板",
     totalQuotes:"总报价数", totalRevenueLabel:"累计收入", recentActivity:"🕐 最近动态",
     confirmedLabel:"已成交", confirmDealBtn:"🎯 确认成交", confirmDealHint:"与客户达成协议后点击确认，收入计入看板统计",
@@ -965,6 +966,7 @@ const I18N = {
     notifEnabled:"✅ Enabled — approval updates will push in real-time", notifDisabled:"🔕 Disabled — tap button to enable push",
     notifDenied:"⚠️ Notification permission denied. Enable in browser settings.", notifNotSupported:"⚠️ Push not supported in this browser",
     notifTestTitle:"LE Quote System", notifTestBody:"🧪 Test push notification — it works!",
+    notifNative:"🔔 Native notifications ready — approval changes will push automatically",
     tabDashboard:"📊 Dashboard", tabClients:"👥 Clients", dashboardTitle:"📊 Operations Dashboard",
     totalQuotes:"Total Quotes", totalRevenueLabel:"Total Revenue", recentActivity:"🕐 Recent Activity",
     confirmedLabel:"Closed", confirmDealBtn:"🎯 Confirm Deal", confirmDealHint:"Click after reaching agreement with client. Revenue counts toward dashboard.",
@@ -2362,6 +2364,17 @@ async function checkPushState(){
   const subBtn = document.getElementById('notifSubscribeBtn');
   const testBtn = document.getElementById('notifTestBtn');
   const unsubBtn = document.getElementById('notifUnsubscribeBtn');
+
+  // ** APK native notifications — always available, no subscribe needed **
+  if(typeof AndroidNotifications !== 'undefined'){
+    if(statusEl) statusEl.textContent = t('notifNative');
+    if(subBtn) subBtn.style.display = 'none';
+    if(testBtn) testBtn.style.display = '';
+    if(unsubBtn) unsubBtn.style.display = 'none';
+    return;
+  }
+
+  // ** Browser Web Push **
   if(!('serviceWorker' in navigator) || !('PushManager' in window)){
     if(statusEl) statusEl.textContent = t('notifNotSupported');
     return;
