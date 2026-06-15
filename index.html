@@ -2702,13 +2702,7 @@ function exportHistory(){
   quotes.forEach(q=>{
     csv += [q.date, q.type, q.hs, '"'+q.name+'"', '"'+q.client+'"', q.cargo||0, q.leRate?q.leRate.toFixed(1):'', q.total||0, statusLabel[q.status]||q.status].join(',') + '\n';
   });
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'LE_历史报价_' + new Date().toISOString().slice(0,10) + '.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url), 60000);
-  toast(`📥 已导出 ${quotes.length} 条报价到下载文件夹`);
+  downloadCsv(csv, 'LE_历史报价_' + new Date().toISOString().slice(0,10) + '.csv');
 }
 
 function toast(msg) {
@@ -2966,13 +2960,7 @@ function exportHistoryPDF(){
   const fmt=(n)=>'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});
   const rows = data.map(q=>`${q.date||''},${q.type||''},${q.hs||''},${q.name||''},${q.client||q.approver||''},${fmt(q.cargoValue||0)},${q.leRate?q.leRate.toFixed(1)+'%':''},${fmt(q.total||0)},${q.status||''}`).join('\n');
   const csv = '日期,类型,HS编码,商品,客户/审批人,货值,LE税率,总费用,状态\n'+rows;
-  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'LE_报价导出_'+new Date().toISOString().slice(0,10)+'.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url), 60000);
-  toast('📄 已导出到下载文件夹');
+  downloadCsv(csv, 'LE_报价导出_'+new Date().toISOString().slice(0,10)+'.csv');
 }
 
 // ========== AUDIO HOOK INTO PUSH ==========
@@ -3002,6 +2990,46 @@ if('ontouchstart' in window){
 }
 
 // ========== EXPORT QUOTE PDF / EXCEL ==========
+// ** Universal download helper — native bridge for APK, <a> for browser **
+async function downloadBlob(html, fileName, mimeType){
+  const blob = new Blob([html], {type: mimeType||'text/html;charset=utf-8'});
+  // Try native Android bridge first (handles blob: URL issue)
+  if(typeof AndroidDownload !== 'undefined' && AndroidDownload.saveFile){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      AndroidDownload.saveFile(e.target.result, fileName, mimeType||'text/html');
+      toast('📄 ' + fileName + ' → 下载文件夹');
+    };
+    reader.readAsDataURL(blob);
+    return;
+  }
+  // Fallback: browser <a> download
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fileName;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 60000);
+  toast('📄 文件已导出 — 检查下载文件夹');
+}
+function downloadCsv(csvContent, fileName){
+  const blob = new Blob(['\uFEFF'+csvContent], {type:'text/csv;charset=utf-8'});
+  if(typeof AndroidDownload !== 'undefined' && AndroidDownload.saveFile){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      AndroidDownload.saveFile(e.target.result, fileName, 'text/csv');
+      toast('📥 ' + fileName + ' → 下载文件夹');
+    };
+    reader.readAsDataURL(blob);
+    return;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fileName;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 60000);
+  toast('📥 CSV已导出 → 检查下载文件夹');
+}
+
 function exportQuotePDF(quoteId, status){
   const q = approvalQueue.find(a=>a.id===quoteId);
   if(!q){ toast('报价未找到'); return; }
@@ -3079,13 +3107,7 @@ function exportQuotePDF(quoteId, status){
 </div>
 </body></html>`;
 
-  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `LE报价单_${q.hs}_${q.name}.html`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url), 60000);
-  toast('📄 报价单已生成 — 检查下载文件夹或通知栏');
+  downloadBlob(html, `LE报价单_${q.hs}_${q.name}.html`);
 }
 
 function exportDirectPDF(directId, status){
@@ -3144,14 +3166,7 @@ ${r.response.note?`<div style="padding:12px;background:#f8f9fd;border-radius:8px
   生成时间: ${now}
 </div>
 </body></html>`;
-
-  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `LE报价单_${r.hs}_${r.name}.html`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url), 60000);
-  toast('📄 报价单已生成 — 检查下载文件夹或通知栏');
+  downloadBlob(html, `LE报价单_${r.hs}_${r.name}.html`);
 }
 
 </script>
