@@ -1523,7 +1523,7 @@ function renderBulletins(){
   const el = document.getElementById('bulletinBoard');
   if(!el) return;
   if(!bulletinPosts.length){
-    el.innerHTML = '<p style="color:rgba(255,255,255,0.4);text-align:center;padding:20px">暂无公告</p>';
+    el.innerHTML = '<p style="color:#999;text-align:center;padding:20px">暂无公告</p>';
     return;
   }
   const roleIcon = { admin:'🛡️', us:'🇺🇸', cn:'🇨🇳' };
@@ -1536,9 +1536,9 @@ function renderBulletins(){
     <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <span style="font-weight:600;font-size:13px">${roleIcon[p.role]||''} ${p.author}</span>
-        <span style="font-size:10px;color:rgba(255,255,255,0.3)">${roleLabel[p.role]||p.role} · ${time}</span>
+        <span style="font-size:10px;color:#888">${roleLabel[p.role]||p.role} · ${time}</span>
       </div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.6;white-space:pre-wrap;word-break:break-word">${p.content}</div>
+      <div style="font-size:13px;color:#1a1a2e;line-height:1.6;white-space:pre-wrap;word-break:break-word">${p.content}</div>
       ${comments.length>0 ? `<div class="comment-section">${comments.map(c=>`<div class="comment-item"><span class="c-author">${c.author}:</span><span>${c.text}</span></div>`).join('')}</div>` : ''}
       <div class="comment-input-row">
         <input id="commentInput_${p.id}" placeholder="写评论..." onkeydown="if(event.key==='Enter')addComment('${p.id}')">
