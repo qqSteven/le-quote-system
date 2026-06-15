@@ -1195,8 +1195,18 @@ let hsData = [
   { code:"2933.99.79", name:()=>t('tariff')[3], mfn:5.0, s301:20, s122:10 },
   { code:"1504.10",    name:()=>t('tariff')[4], mfn:4.0, s301:25, s122:8.9 },
 ];
-let approvalQueue = [];
+let approvalQueue = (()=>{
+  try { return JSON.parse(localStorage.getItem('le_approval_queue')||'[]'); }
+  catch(e){ return []; }
+})();
+let directRequests = (()=>{
+  try { return JSON.parse(localStorage.getItem('le_direct_requests')||'[]'); }
+  catch(e){ return []; }
+})();
 let pendingSubmit = null;
+
+function saveApprovalQueue(){ localStorage.setItem('le_approval_queue', JSON.stringify(approvalQueue)); }
+function saveDirectRequests(){ localStorage.setItem('le_direct_requests', JSON.stringify(directRequests)); }
 
 function popHsDropdowns() {
   const opts = hsData.map(h => `<option value="${h.code}" data-mfn="${h.mfn}" data-s301="${h.s301}" data-s122="${h.s122}">${h.code} ${typeof h.name==='function'?h.name():h.name} (${(h.mfn+h.s301+h.s122).toFixed(1)}%)</option>`).join('');
@@ -1932,6 +1942,7 @@ function submitForApproval() {
   }
 
   approvalQueue.unshift(quote);
+  saveApprovalQueue();
   closeSubmitModal();
   toast(`✅ ${t('submitted')}: ${approver}`);
   sendLocalPush('📋 新报价待审批', `${quote.companyName?quote.companyName+' — ':''}${quote.hs} ${quote.name} → ${approver}`, 'approval');
@@ -2085,6 +2096,7 @@ function actOnApproval(id, newStatus) {
     return;
   }
   q.status = 'approved';
+  saveApprovalQueue();
   document.getElementById('approvalDetailModal').classList.remove('show');
   toast(`🤝 ${t('agreed')} — ${q.hs} ${q.name}`);
   sendLocalPush('👍 报价已批准', `${q.hs} ${q.name} — 已批准，可确认成交`, 'dashboard');
@@ -2122,6 +2134,7 @@ function confirmDeal(id, type){
     const q = approvalQueue.find(a=>a.id===id);
     if(!q) return;
     q.status = 'confirmed';
+    saveApprovalQueue();
     document.getElementById('approvalDetailModal').classList.remove('show');
     toast(`🎯 ${t('confirmedLabel')} — ${q.hs} ${q.name} | 收入 $${(q.total||0).toLocaleString()}`);
     sendLocalPush('🎯 交易已确认', `${q.hs} ${q.name} — 收入 $${(q.total||0).toLocaleString()}`, 'dashboard');
@@ -2131,6 +2144,7 @@ function confirmDeal(id, type){
     const r = directRequests.find(d=>d.id===id);
     if(!r) return;
     r.status = 'confirmed';
+    saveDirectRequests();
     toast(`🎯 ${t('confirmedLabel')} — ${r.hs} ${r.name} | 收入 $${(r.response?.total||0).toLocaleString()}`);
     sendLocalPush('🎯 交易已确认', `${r.hs} ${r.name} — 收入 $${(r.response?.total||0).toLocaleString()}`, 'dashboard');
     renderDirectRequests();
@@ -2247,6 +2261,7 @@ function submitCounterOffer(){
 }
 function doSubmitCounterOffer(q, coLeRate, coBroker, coDuty, coTotal, reason, coUsLog, coSea){
   q.status = 'rejected';
+  saveApprovalQueue();
   q.rejectReason = reason;
   q.counterOffer = { leRate: coLeRate, brokerFee: coBroker, duty: coDuty, total: coTotal };
   if(q.type==='ddp'){ q.counterOffer.usLog = coUsLog||0; q.counterOffer.sea = coSea||0; }
@@ -2381,7 +2396,6 @@ function renderFiles(){
 }
 
 // ========== DIRECT QUOTE (报价逻辑二) ==========
-let directRequests = []; // {id, hs, name, client, exw, weight, note, status, submittedAt, response}
 
 function submitDirectRequest(){
   const hsEl = document.getElementById('directHsSelect');
@@ -2399,6 +2413,7 @@ function submitDirectRequest(){
     hs: code, name, client, exw, weight, note, status: 'pending',
     submittedAt: new Date().toLocaleString(), response: null
   });
+  saveDirectRequests();
   document.getElementById('directClient').value = '';
   document.getElementById('directExw').value = '';
   document.getElementById('directWeight').value = '';
@@ -2528,6 +2543,7 @@ function submitDirectResponse(){
 function doSubmitDirectResponse(r, leRate, broker, note, leDuty){
   r.response = { leRate, broker, duty: leDuty||(r.exw*leRate/100), total: (leDuty||(r.exw*leRate/100))+broker, note };
   r.status = 'responded';
+  saveDirectRequests();
   renderDirectRequests();
   toast(`📋 ${t('directResponded')}: ${r.hs} ${r.name}`);
 }
@@ -2542,11 +2558,13 @@ function confirmProfitOverride(){
     const r = d.request;
     r.response = { leRate: d.leRate, broker: d.broker, duty: d.leDuty, total: d.total, note: d.note, profitExplain: explain };
     r.status = 'responded';
+    saveDirectRequests();
     renderDirectRequests();
     toast(`⚠️ ${t('directResponded')}: ${r.hs} ${r.name} (已附说明)`);
   } else if(d.type==='counter'){
     const q = d.quote;
     q.status = 'rejected';
+    saveApprovalQueue();
     q.rejectReason = (d.reason||'') + ' | [利润不足说明] ' + explain;
     q.counterOffer = { leRate: d.coLeRate, brokerFee: d.coBroker, duty: d.coDuty, total: d.coTotal };
     q.counterOffer.profitExplain = explain;
