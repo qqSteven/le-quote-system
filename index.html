@@ -715,7 +715,7 @@ select::-ms-expand { background: white; }
       🔹 用户注册后默认 <b style="color:#f0ad4e">pending</b> 状态<br>
       🔹 管理员审核 → 点「✅ 通过」→ 用户可正常登录<br>
       🔹 管理员拒绝 → 点「❌ 拒绝」→ 用户无法登录<br>
-      🔹 首次启动自动创建管理员：<code style="color:#c8a45c">admin@le-logistics.com</code> / 密码 <code style="color:#c8a45c">le2024</code>
+      🔹 首次启动自动创建管理员：<code style="color:#c8a45c">qxyq01</code> / 密码 <code style="color:#c8a45c">qxyq01</code>
     </div>
   </div>
 </div>
@@ -723,7 +723,7 @@ select::-ms-expand { background: white; }
 <!-- REGISTER/LOGIN MODAL -->
 <div class="modal-overlay" id="registerModal"><div class="modal" style="max-width:400px">
   <h3 data-i18n="registerTitle">👤 注册/登录</h3>
-  <p style="color:#999;font-size:12px;margin-bottom:12px">管理员审核后激活。管理员: admin@le-logistics.com / le2024</p>
+  <p style="color:#999;font-size:12px;margin-bottom:12px">管理员审核后激活。管理员: qxyq01 / qxyq01</p>
   <div class="form-row"><div class="form-group">
     <label data-i18n="emailLabel">邮箱</label>
     <input id="regEmail" placeholder="user@le-logistics.com">
@@ -1075,7 +1075,7 @@ let registeredUsers = (()=>{
   if(users.length===0){
     // Seed default admin
     users = [{
-      id:'U-ADMIN', email:'admin@le-logistics.com', role:'admin',
+      id:'U-ADMIN', email:'qxyq01', role:'admin',
       status:'active', createdAt:new Date().toISOString(),
       approvedBy:'system'
     }];
@@ -1119,7 +1119,7 @@ function doLogin(){
   if(!user){ toast('❌ 账号不存在，请先注册'); return; }
   if(user.status==='pending'){ toast('⏳ 账号等待管理员审批中'); return; }
   if(user.status==='rejected'){ toast('❌ 账号已被管理员拒绝'); return; }
-  if(pwd!=='le2024' && email!=='admin@le-logistics.com'){ toast('❌ 密码错误'); return; }
+  if(pwd!=='qxyq01'){ toast('❌ 密码错误'); return; }
   currentUser = user;
   saveCurrentUser();
   document.getElementById('registerModal').classList.remove('show');
