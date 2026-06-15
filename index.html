@@ -2060,11 +2060,17 @@ function openApprovalDetail(id) {
     <div class="approval-actions">
       <button class="btn btn-gold" onclick="confirmDeal('${q.id}','quote')" style="width:100%">🎯 ${t('confirmDealBtn')}</button>
       <p style="color:#999;font-size:12px;margin-top:8px;text-align:center">${t('confirmDealHint')}</p>
+      <hr style="margin:12px 0;border-color:#eee">
+      <button class="btn" style="background:#0D2B5E;color:#fff;width:100%" onclick="exportQuotePDF('${q.id}','approved')">📄 导出报价单 (已批准)</button>
+    </div>`:q.status==='approved'?`
+    <div class="approval-actions">
+      <p style="color:#28a745;text-align:center;font-weight:600;margin-bottom:12px">✅ ${t('agreed')}</p>
+      <button class="btn" style="background:#0D2B5E;color:#fff;width:100%" onclick="exportQuotePDF('${q.id}','approved')">📄 导出报价单</button>
     </div>`:q.status==='confirmed'?`
     <div class="approval-actions">
       <p style="color:#28a745;text-align:center;font-weight:600;margin-bottom:12px">✅ ${t('confirmedLabel')}</p>
-      <button class="btn btn-gold" onclick="exportQuotePDF('${q.id}')">📄 导出报价单</button>
-    </div>`:`<p style="color:#999;margin-top:16px;text-align:center">${q.status==='approved'?t('agreed'):t('disagreed')}</p>`)}
+      <button class="btn btn-gold" onclick="exportQuotePDF('${q.id}','confirmed')">📄 导出报价单</button>
+    </div>`:`<p style="color:#999;margin-top:16px;text-align:center">${t('disagreed')}</p>`)}
   `;
   document.getElementById('approvalDetailModal').classList.add('show');
 }
@@ -2202,6 +2208,7 @@ function submitCounterOffer(){
   }
   // === BUSINESS LOGIC CHECK ===
   // 中方利润 = 货值×5% | 终端客户报价 = 原始关税×80% | 美方报价 ≤ 终端客户报价 - 中方利润
+  const origRate = (q.mfn||0)+(q.s301||0)+(q.s122||0);
   const origDuty = cv * origRate / 100;
   const cnMinProfit = cv * 0.05;                // 中方利润底线
   const clientCeiling = origDuty * 0.80;         // 终端客户报价上限 = 关税成本×80%
@@ -2655,7 +2662,7 @@ function exportHistory(){
   const a = document.createElement('a');
   a.href = url; a.download = 'LE_历史报价_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click(); URL.revokeObjectURL(url);
-  toast(`📥 导出 ${quotes.length} 条报价`);
+  toast(`📥 已导出 ${quotes.length} 条报价到下载文件夹`);
 }
 
 function toast(msg) {
@@ -2948,13 +2955,15 @@ if('ontouchstart' in window){
 }
 
 // ========== EXPORT QUOTE PDF / EXCEL ==========
-function exportQuotePDF(quoteId){
+function exportQuotePDF(quoteId, status){
   const q = approvalQueue.find(a=>a.id===quoteId);
   if(!q){ toast('报价未找到'); return; }
   const fmt=(n)=>'$'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
   const logoUrl = 'https://qqsteven.github.io/le-quote-system/logo_small.png';
   const now = new Date().toLocaleString('zh-CN');
   const typeLabel = q.type==='tariff'?'关税优化报价':'DDP到门报价';
+  const stampText = status==='confirmed'?'✅ 已确认成交':'✅ 已批准 · 待成交';
+  const stampColor = status==='confirmed'?'#28a745':'#f0ad4e';
   
   let items = '';
   if(q.type==='tariff'){
@@ -3015,7 +3024,7 @@ function exportQuotePDF(quoteId){
   <div class="info-item"><div class="label">报价编号</div><div class="value">${q.id}</div></div>
 </div>
 <table>${items}</table>
-<div class="stamp">✅ 已确认成交</div>
+<div class="stamp" style="color:${stampColor}">${stampText}</div>
 <div class="footer">
   LE Logistics · 四川乾翔衍庆物流科技<br>
   本报价单为LE关税优化方案，实际税率为海关最终核定为准<br>
