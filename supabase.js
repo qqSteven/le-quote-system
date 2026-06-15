@@ -132,20 +132,47 @@ const DB = {
     }
   },
 
-  // --- Init: load all from Supabase on startup ---
+  // --- Init: load all from Supabase on startup, refresh in-memory variables ---
   async init() {
     if(!supabase) return;
     try {
-      // Load all data from Supabase and merge into localStorage for existing code
       const [users, quotes, directs, bulletins, comments] = await Promise.all([
         DB.getUsers(), DB.getQuotes(), DB.getDirectRequests(), DB.getBulletins(), DB.getComments()
       ]);
+      // Write to localStorage
       if(users.length) localStorage.setItem('le_users', JSON.stringify(users));
       if(quotes.length) localStorage.setItem('le_approval_queue', JSON.stringify(quotes));
       if(directs.length) localStorage.setItem('le_direct_requests', JSON.stringify(directs));
       if(bulletins.length) localStorage.setItem('le_posts', JSON.stringify(bulletins));
       if(Object.keys(comments).length) localStorage.setItem('le_comments', JSON.stringify(comments));
-      console.log('✅ Supabase: data loaded into localStorage cache');
+      
+      // ** CRITICAL: refresh in-memory arrays so UI shows data immediately **
+      if(users.length && typeof registeredUsers !== 'undefined') {
+        registeredUsers.splice(0, registeredUsers.length, ...users);
+        if(typeof saveUsers === 'function') saveUsers();
+      }
+      if(quotes.length && typeof approvalQueue !== 'undefined') {
+        approvalQueue.splice(0, approvalQueue.length, ...quotes);
+        if(typeof saveApprovalQueue === 'function') saveApprovalQueue();
+      }
+      if(directs.length && typeof directRequests !== 'undefined') {
+        directRequests.splice(0, directRequests.length, ...directs);
+        if(typeof saveDirectRequests === 'function') saveDirectRequests();
+      }
+      if(bulletins.length && typeof bulletinPosts !== 'undefined') {
+        bulletinPosts.splice(0, bulletinPosts.length, ...bulletins);
+      }
+      if(Object.keys(comments).length && typeof bulletinComments !== 'undefined') {
+        Object.assign(bulletinComments, comments);
+      }
+      
+      // Re-render UI
+      if(typeof renderApproval === 'function') renderApproval();
+      if(typeof renderBulletins === 'function') renderBulletins();
+      if(typeof renderDashboard === 'function') renderDashboard();
+      if(typeof renderAdminPanel === 'function') renderAdminPanel();
+      
+      console.log('✅ Supabase: synced ' + users.length + ' users, ' + quotes.length + ' quotes to memory');
     } catch(e) {
       console.log('Supabase init: using localStorage only', e.message);
     }
