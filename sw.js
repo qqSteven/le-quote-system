@@ -2,8 +2,7 @@
 const CACHE_NAME = 'le-quote-v1';
 const ASSETS = [
   './',
-  'LE报价系统.html',
-  'le_quote_upgrade.html',
+  'index.html',
   'logo_small.png',
   'manifest.json'
 ];
