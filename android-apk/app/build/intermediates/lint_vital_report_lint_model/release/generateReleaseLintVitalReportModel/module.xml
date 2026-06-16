@@ -6,9 +6,9 @@
     maven="LE Quote:app:"
     agpVersion="8.2.0"
     buildFolder="build"
-    bootClassPath="F:\android-sdk\platforms\android-34\android.jar;F:\android-sdk\build-tools\34.0.0\core-lambda-stubs.jar"
+    bootClassPath="F:\工作文件\Android\platforms\android-35\android.jar;F:\工作文件\Android\build-tools\34.0.0\core-lambda-stubs.jar"
     javaSourceLevel="17"
-    compileTarget="android-34"
+    compileTarget="android-35"
     neverShrinking="true">
   <lintOptions
       abortOnError="true"

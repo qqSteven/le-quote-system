@@ -890,8 +890,8 @@ select::-ms-expand { background: white; }
   <div id="quotePreviewContent" style="min-height:300px"></div>
   <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;position:sticky;bottom:0;background:white;padding-top:8px;border-top:1px solid #eee">
     <button class="btn btn-sm btn-outline" onclick="closeQuotePreview()">✕ 关闭预览</button>
-    <button class="btn btn-sm btn-gold" onclick="downloadQuoteFromPreview()">📥 下载报价单</button>
-    <button class="btn btn-sm" style="background:#0D2B5E;color:#fff" onclick="printQuotePreview()">🖨️ 打印</button>
+    <button class="btn btn-sm btn-gold" onclick="printQuotePreview()" style="font-size:13px;font-weight:600">📄 保存为PDF</button>
+    <button class="btn btn-sm" style="background:#0D2B5E;color:#fff" onclick="downloadQuoteFromPreview()">📥 下载HTML</button>
   </div>
 </div></div>
 <div class="modal-overlay" id="bulletinModal"><div class="modal" style="max-width:480px">
@@ -928,6 +928,18 @@ select::-ms-expand { background: white; }
   <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
     <button class="btn btn-gold" onclick="doRegister()" style="flex:1;min-width:80px" data-i18n="registerBtn">📝 注册</button>
     <button class="btn" style="background:#0D2B5E;color:#fff;flex:1;min-width:80px" onclick="doLogin()">🔑 登录</button>
+  </div>
+</div></div>
+
+<!-- CUSTOMER LOST MODAL -->
+<div class="modal-overlay" id="customerLostModal"><div class="modal">
+  <h3>🚫 客户流失</h3>
+  <p style="color:#999;font-size:12px;margin-bottom:12px" id="customerLostInfo"></p>
+  <label style="font-weight:600;font-size:13px">流失原因 <span style="color:#dc3545">*</span></label>
+  <textarea id="customerLostReason" rows="3" placeholder="请详细说明客户流失原因（如：客户选择了竞争对手、价格问题、项目取消等）" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:vertical;margin-top:6px"></textarea>
+  <div style="display:flex;gap:12px;margin-top:16px">
+    <button class="btn btn-sm btn-outline" onclick="closeModal('customerLostModal')">取消</button>
+    <button class="btn btn-sm" style="background:#dc3545;color:#fff;flex:1" onclick="submitCustomerLost()">确认流失</button>
   </div>
 </div></div>
 
@@ -2105,6 +2117,7 @@ function openApprovalDetail(id) {
     <div class="approval-actions">
       <button class="btn btn-gold" onclick="confirmDeal('${q.id}','quote')" style="width:100%">🎯 ${t('confirmDealBtn')}</button>
       <p style="color:#999;font-size:12px;margin-top:8px;text-align:center">${t('confirmDealHint')}</p>
+      <button class="btn" style="background:#dc3545;color:#fff;width:100%;margin-bottom:8px" onclick="openCustomerLost('${q.id}','quote')">🚫 客户流失</button>
       <hr style="margin:12px 0;border-color:#eee">
       <button class="btn" style="background:#0D2B5E;color:#fff;width:100%" onclick="exportQuotePDF('${q.id}','approved')">📄 导出报价单 (已批准)</button>
     </div>`:q.status==='approved'?`
@@ -2184,6 +2197,78 @@ function confirmDeal(id, type){
     renderDirectRequests();
     renderDashboard();
   }
+}
+
+let customerLostRecords = (()=>{
+  try { return JSON.parse(localStorage.getItem('le_customer_lost')||'[]'); }
+  catch(e){ return []; }
+})();
+function saveCustomerLost(){ localStorage.setItem('le_customer_lost', JSON.stringify(customerLostRecords)); }
+
+let _customerLostTarget = null;
+function openCustomerLost(id, type){
+  _customerLostTarget = { id, type };
+  let label = '';
+  if(type==='quote'){
+    const q = approvalQueue.find(a=>a.id===id);
+    if(!q) return;
+    label = `报价单 ${q.hs} ${q.name} — 金额 $${(q.total||0).toLocaleString()}`;
+  } else {
+    const r = directRequests.find(d=>d.id===id);
+    if(!r) return;
+    label = `直接报价 ${r.hs} ${r.name} — 金额 $${(r.response?.total||0).toLocaleString()}`;
+  }
+  document.getElementById('customerLostInfo').textContent = label;
+  document.getElementById('customerLostReason').value = '';
+  document.getElementById('customerLostModal').classList.add('show');
+}
+
+function submitCustomerLost(){
+  const reason = document.getElementById('customerLostReason').value.trim();
+  if(!reason){ toast('⚠️ 请填写客户流失原因'); return; }
+  if(!_customerLostTarget) return;
+  
+  const { id, type } = _customerLostTarget;
+  const record = {
+    id: 'LOST_'+Date.now().toString(36),
+    quoteId: id,
+    type: type,
+    reason: reason,
+    time: new Date().toISOString(),
+    hs: '',
+    name: '',
+    amount: 0
+  };
+  
+  if(type==='quote'){
+    const q = approvalQueue.find(a=>a.id===id);
+    if(q){
+      record.hs = q.hs;
+      record.name = q.name;
+      record.amount = q.total||0;
+      q.status = 'lost';
+      saveApprovalQueue();
+    }
+  } else {
+    const r = directRequests.find(d=>d.id===id);
+    if(r){
+      record.hs = r.hs;
+      record.name = r.name;
+      record.amount = r.response?.total||0;
+      r.status = 'lost';
+      saveDirectRequests();
+    }
+  }
+  
+  customerLostRecords.unshift(record);
+  saveCustomerLost();
+  closeModal('customerLostModal');
+  closeModal('approvalDetailModal');
+  toast(`🚫 已记录客户流失 — ${record.name}`);
+  sendLocalPush('🚫 客户流失', `${record.name} — ${reason}`, 'dashboard');
+  if(type==='quote') renderApproval(); else renderDirectRequests();
+  renderDashboard();
+  _customerLostTarget = null;
 }
 
 let counterOfferTarget = null;
