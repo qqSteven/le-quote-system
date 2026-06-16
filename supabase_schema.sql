@@ -89,25 +89,57 @@ CREATE TABLE IF NOT EXISTS files (
   uploaded_by TEXT DEFAULT 'anon'
 );
 
+-- 7. 订单管理 (v2.0+)
+CREATE TABLE IF NOT EXISTS orders (
+  id TEXT PRIMARY KEY,
+  hs TEXT NOT NULL,
+  name TEXT NOT NULL,
+  company TEXT DEFAULT '',
+  client TEXT DEFAULT '',
+  total REAL DEFAULT 0,
+  status TEXT DEFAULT 'processing',
+  logistics JSONB DEFAULT '{}',
+  source_id TEXT,
+  confirmed_at TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. 客户流失记录
+CREATE TABLE IF NOT EXISTS customer_lost (
+  id TEXT PRIMARY KEY,
+  hs TEXT NOT NULL,
+  name TEXT NOT NULL,
+  company TEXT DEFAULT '',
+  reason TEXT DEFAULT '',
+  recorded_at TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 索引
 CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status);
 CREATE INDEX IF NOT EXISTS idx_quotes_submitted ON quotes(submitted_at);
 CREATE INDEX IF NOT EXISTS idx_direct_status ON direct_requests(status);
 CREATE INDEX IF NOT EXISTS idx_bulletins_created ON bulletins(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_customer_lost_created ON customer_lost(created_at DESC);
 
--- RLS 策略 (公开读取，仅管理员写入 — 按需调整)
+-- RLS 策略 (公开读取，公开写入 — 内网使用)
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE direct_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bulletins ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE files ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE customer_lost ENABLE ROW LEVEL SECURITY;
 
--- 公开策略 (anon key 可读写 — 适合内网使用，如需严格权限请改为 auth.uid())
 CREATE POLICY "Allow all" ON profiles FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON quotes FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON direct_requests FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON bulletins FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON comments FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON files FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON orders FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON customer_lost FOR ALL USING (true) WITH CHECK (true);

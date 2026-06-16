@@ -132,6 +132,47 @@ const DB = {
     }
   },
 
+  // --- Orders (v2.0+) ---
+  async getOrders() {
+    if(supabase) {
+      const { data, error } = await supabase.from('orders').select('*').order('created_at',{ascending:false});
+      if(!error) return data.map(o=>({...o, sourceId:o.source_id, confirmedAt:o.confirmed_at, createdAt:o.created_at}));
+    }
+    return JSON.parse(localStorage.getItem('le_orders')||'[]');
+  },
+  async saveOrders(orders) {
+    localStorage.setItem('le_orders', JSON.stringify(orders));
+    if(supabase) {
+      for(const o of orders) {
+        await supabase.from('orders').upsert({
+          id: o.id, hs: o.hs, name: o.name, company: o.company||'', client: o.client||'',
+          total: o.total||0, status: o.status, logistics: o.logistics||{},
+          source_id: o.sourceId, confirmed_at: o.confirmedAt, created_at: o.createdAt
+        }, {onConflict:'id'});
+      }
+    }
+  },
+
+  // --- Customer Lost (v1.7+) ---
+  async getCustomerLost() {
+    if(supabase) {
+      const { data, error } = await supabase.from('customer_lost').select('*').order('created_at',{ascending:false});
+      if(!error) return data.map(c=>({...c, recordedAt:c.recorded_at, createdAt:c.created_at}));
+    }
+    return JSON.parse(localStorage.getItem('le_customer_lost')||'[]');
+  },
+  async saveCustomerLost(records) {
+    localStorage.setItem('le_customer_lost', JSON.stringify(records));
+    if(supabase) {
+      for(const r of records) {
+        await supabase.from('customer_lost').upsert({
+          id: r.id, hs: r.hs, name: r.name, company: r.company||'',
+          reason: r.reason||'', recorded_at: r.recordedAt, created_at: r.createdAt||new Date().toISOString()
+        }, {onConflict:'id'});
+      }
+    }
+  },
+
   // --- Init: load all from Supabase on startup, refresh in-memory variables ---
   async init() {
     if(!supabase) return;
@@ -139,12 +180,17 @@ const DB = {
       const [users, quotes, directs, bulletins, comments] = await Promise.all([
         DB.getUsers(), DB.getQuotes(), DB.getDirectRequests(), DB.getBulletins(), DB.getComments()
       ]);
+      // Also load orders + customer lost (non-blocking)
+      const orders = await DB.getOrders().catch(()=>[]);
+      const lost = await DB.getCustomerLost().catch(()=>[]);
       // Write to localStorage
       if(users.length) localStorage.setItem('le_users', JSON.stringify(users));
       if(quotes.length) localStorage.setItem('le_approval_queue', JSON.stringify(quotes));
       if(directs.length) localStorage.setItem('le_direct_requests', JSON.stringify(directs));
       if(bulletins.length) localStorage.setItem('le_posts', JSON.stringify(bulletins));
       if(Object.keys(comments).length) localStorage.setItem('le_comments', JSON.stringify(comments));
+      if(orders.length) localStorage.setItem('le_orders', JSON.stringify(orders));
+      if(lost.length) localStorage.setItem('le_customer_lost', JSON.stringify(lost));
       
       // ** CRITICAL: refresh in-memory arrays so UI shows data immediately **
       if(users.length && typeof registeredUsers !== 'undefined') {
@@ -165,6 +211,10 @@ const DB = {
       if(Object.keys(comments).length && typeof bulletinComments !== 'undefined') {
         Object.assign(bulletinComments, comments);
       }
+      if(orders.length && typeof window.orders !== 'undefined') {
+        window.orders.splice(0, window.orders.length, ...orders);
+        if(typeof saveOrders === 'function') saveOrders();
+      }
       
       // Re-render UI
       if(typeof renderApproval === 'function') renderApproval();
@@ -172,7 +222,7 @@ const DB = {
       if(typeof renderDashboard === 'function') renderDashboard();
       if(typeof renderAdminPanel === 'function') renderAdminPanel();
       
-      console.log('✅ Supabase: synced ' + users.length + ' users, ' + quotes.length + ' quotes to memory');
+      console.log('✅ Supabase synced: ' + users.length + ' users, ' + quotes.length + ' quotes, ' + orders.length + ' orders');
     } catch(e) {
       console.log('Supabase init: using localStorage only', e.message);
     }
