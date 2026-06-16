@@ -38,6 +38,7 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   background-attachment: fixed;
+  padding-top: env(safe-area-inset-top, 24px);
 }
 
 /* ===== HEADER ===== */
@@ -3048,17 +3049,18 @@ function closeQuotePreview(){
 }
 
 function downloadQuoteFromPreview(){
-  if(!_pendingDownload) return;
+  if(!_pendingDownload){ toast('⚠️ 没有待下载内容'); return; }
   const { html, fileName, mimeType } = _pendingDownload;
   
   // Try native Android bridge first
   if(typeof AndroidDownload !== 'undefined' && AndroidDownload.saveFile){
     const blob = new Blob([html], {type: mimeType});
+    const afileName = fileName || 'LE报价单.html';
     const reader = new FileReader();
     reader.onload = function(e){
       try {
-        AndroidDownload.saveFile(e.target.result, fileName, mimeType);
-        toast('📥 ' + fileName + ' → 下载文件夹');
+        AndroidDownload.saveFile(e.target.result, afileName, mimeType||'text/html');
+        // Toast handled by Android native side
       } catch(ex) {
         toast('⚠️ 保存失败: ' + ex.message);
       }
@@ -3072,15 +3074,20 @@ function downloadQuoteFromPreview(){
   const blob = new Blob([html], {type: mimeType});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = fileName;
+  a.href = url; a.download = fileName || 'LE报价单.html';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url), 60000);
   toast('📥 正在下载 — 检查浏览器下载列表');
 }
 
 function printQuotePreview(){
-  // Use window.print() — system print dialog with Cancel button
-  // Add temporary print-only style
+  // Try native Android print bridge first
+  if(typeof AndroidPrint !== 'undefined' && AndroidPrint.print){
+    AndroidPrint.print('LE报价单');
+    toast('🖨️ 正在打开打印对话框...');
+    return;
+  }
+  // Fallback: window.print() with print-only style
   const style = document.createElement('style');
   style.id = 'printTmp';
   style.textContent = '@media print { body>*:not(#quotePreviewModal) { display:none !important; } #quotePreviewModal { position:static !important; background:white !important; } #quotePreviewModal .modal { box-shadow:none !important; border:none !important; } }';
