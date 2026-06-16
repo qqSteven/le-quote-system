@@ -2715,6 +2715,8 @@ function deleteFile(id){
       window.__sb.storage.from('files').remove([uploadedFiles[idx].path]).catch(()=>{});
     }
     uploadedFiles.splice(idx,1);
+    localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
+    if(typeof DB !== 'undefined' && DB.saveFiles) DB.saveFiles(uploadedFiles).catch(()=>{});
   }
   renderFiles();
   toast('🗑️ '+t('fileDeleted'));

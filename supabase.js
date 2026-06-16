@@ -180,9 +180,10 @@ const DB = {
       const [users, quotes, directs, bulletins, comments] = await Promise.all([
         DB.getUsers(), DB.getQuotes(), DB.getDirectRequests(), DB.getBulletins(), DB.getComments()
       ]);
-      // Also load orders + customer lost (non-blocking)
+      // Also load orders + customer lost + files (non-blocking)
       const orders = await DB.getOrders().catch(()=>[]);
       const lost = await DB.getCustomerLost().catch(()=>[]);
+      const files = await DB.getFiles().catch(()=>[]);
       // Write to localStorage
       if(users.length) localStorage.setItem('le_users', JSON.stringify(users));
       if(quotes.length) localStorage.setItem('le_approval_queue', JSON.stringify(quotes));
@@ -191,6 +192,7 @@ const DB = {
       if(Object.keys(comments).length) localStorage.setItem('le_comments', JSON.stringify(comments));
       if(orders.length) localStorage.setItem('le_orders', JSON.stringify(orders));
       if(lost.length) localStorage.setItem('le_customer_lost', JSON.stringify(lost));
+      if(files.length) localStorage.setItem('le_files', JSON.stringify(files));
       
       // ** CRITICAL: refresh in-memory arrays so UI shows data immediately **
       if(users.length && typeof registeredUsers !== 'undefined') {
