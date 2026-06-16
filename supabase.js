@@ -2,7 +2,7 @@
 // Hybrid: Supabase → localStorage fallback
 // Run after supabase client is initialized (in index.html <head>)
 
-function getSupabase(){ return window.supabaseClient || null; }
+function getSupabase(){ return window.__sb || null; }
 const DB = {
   async getUsers() {
     if(getSupabase()) {

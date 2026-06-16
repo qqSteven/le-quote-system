@@ -3792,19 +3792,18 @@ function updateLogisticsStep(orderId){
 <!-- Supabase SDK: 同步加载，不依赖CDN -->
 <script src="supabase.min.js?v=2.1.5"></script>
 <script>
-const SUPABASE_URL = 'https://nhfhwbnhibqyqdxpclkc.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_sHwxc_z2DOS4wIxI8bEWSA_dX3UDB9J';
-(function initSupabase(){
-  try {
-    if(window.supabase) {
-      window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      console.log('✅ Supabase connected: '+SUPABASE_URL);
-    } else {
-      console.warn('⚠️ window.supabase undefined — Supabase SDK failed to load');
-    }
-    if(typeof DB !== 'undefined') DB.init();
-  } catch(e) { console.error('Supabase init error:', e.message); }
-})();
+window.SB_URL='https://nhfhwbnhibqyqdxpclkc.supabase.co';
+window.SB_KEY='sb_publishable_sHwxc_z2DOS4wIxI8bEWSA_dX3UDB9J';
+window.__sb = null;
+try {
+  if(typeof supabase !== 'undefined') {
+    window.__sb = supabase.createClient(window.SB_URL, window.SB_KEY);
+    console.log('✅ Supabase connected: '+window.SB_URL);
+  } else {
+    console.warn('⚠️ Supabase SDK not loaded');
+  }
+  if(typeof DB !== 'undefined') DB.init();
+} catch(e) { console.error('Supabase init error:', e.message); }
 </script>
 </body>
 </html>
