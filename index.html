@@ -366,6 +366,57 @@ select::-ms-expand { background: white; }
 .summary-card .value.highlight { color: var(--gold); }
 .summary-card .value.green { color: #059669; }
 
+/* ===== ORDER CARD ===== */
+.order-card {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 18px; margin-bottom: 12px;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  cursor: pointer; transition: all .25s;
+}
+.order-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.order-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px; }
+.order-card-id { font-size:13px; font-weight:700; color:var(--navy); }
+.order-card-status { padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; }
+.status-processing { background:#fff3cd; color:#856404; }
+.status-shipping { background:#cce5ff; color:#004085; }
+.status-customs { background:#fff3cd; color:#856404; }
+.status-delivering { background:#d4edda; color:#155724; }
+.status-delivered { background:#d4edda; color:#155724; }
+.order-card-body { font-size:13px; color:var(--text-muted); margin-bottom:10px; display:flex; gap:16px; flex-wrap:wrap; }
+.order-card-body span { white-space:nowrap; }
+.order-card-body strong { color:var(--text); }
+/* Logistics progress bar */
+.logistics-bar { display:flex; gap:0; margin-top:8px; }
+.logistics-step { flex:1; text-align:center; position:relative; padding-top:18px; }
+.logistics-step::before {
+  content:''; position:absolute; top:4px; left:50%; transform:translateX(-50%);
+  width:10px; height:10px; border-radius:50%;
+  background:#e0e0e0; z-index:2; transition:all .3s;
+}
+.logistics-step::after {
+  content:''; position:absolute; top:8px; left:0; right:0; height:3px;
+  background:#e0e0e0; z-index:1;
+}
+.logistics-step:first-child::after { left:50%; }
+.logistics-step:last-child::after { right:50%; }
+.logistics-step.done::before, .logistics-step.done::after { background:var(--gold); }
+.logistics-step.active::before { background:var(--navy); box-shadow:0 0 0 3px rgba(13,43,94,0.2); }
+.logistics-step.active::after { background:linear-gradient(to right,var(--gold),#e0e0e0); }
+.logistics-step-label { font-size:10px; color:var(--text-muted); margin-top:4px; }
+.logistics-step.done .logistics-step-label { color:var(--gold); font-weight:600; }
+.logistics-step.active .logistics-step-label { color:var(--navy); font-weight:700; }
+
+/* Logistics detail modal */
+.logistics-detail { display:flex; flex-direction:column; gap:12px; margin:16px 0; }
+.logistics-node { display:flex; gap:12px; align-items:flex-start; padding:12px; border-radius:10px; background:#f8f9fd; border:1px solid #eef0f5; }
+.logistics-node.done { background:#f0faf4; border-color:#d4edda; }
+.logistics-node.active { background:#f0f4ff; border-color:#cce5ff; }
+.logistics-node-icon { font-size:22px; flex-shrink:0; }
+.logistics-node-info { flex:1; }
+.logistics-node-title { font-weight:700; font-size:14px; margin-bottom:4px; }
+.logistics-node-meta { font-size:12px; color:var(--text-muted); }
+.logistics-node-meta strong { color:var(--text); }
+
 /* ===== HERO SECTION (on empty states) ===== */
 .coming-soon { text-align:center; padding: 60px 20px; }
 .coming-soon .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; animation: float 3s ease-in-out infinite; }
@@ -575,6 +626,7 @@ select::-ms-expand { background: white; }
   <div class="tab" onclick="switchTab('files')" data-i18n="tabFiles">📁 文件管理</div>
   <div class="tab" onclick="switchTab('history')" data-i18n="tabHistory">📊 历史数据</div>
   <div class="tab" onclick="switchTab('ddp')" data-i18n="tabDdp">🚚 DDP</div>
+  <div class="tab" onclick="switchTab('orders')" data-i18n="tabOrders">📦 订单管理</div>
   <div class="tab" onclick="switchTab('admin')" data-i18n="tabAdmin" style="display:none">🛡️ 管理</div>
 </div>
 
@@ -886,6 +938,31 @@ select::-ms-expand { background: white; }
   </div>
 </div>
 
+<!-- ORDERS PANEL (v2.0) -->
+<div class="panel" id="panel-orders">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div>
+      <h2 style="margin:0;color:#fff;font-size:18px" data-i18n="ordersTitle">📦 订单管理</h2>
+      <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:4px 0 0" data-i18n="ordersDesc">报价确认成交后自动生成订单，追踪物流全流程</p>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-outline" onclick="renderOrders('all')" data-i18n="ordersFilterAll">全部</button>
+      <button class="btn btn-sm btn-outline" onclick="renderOrders('active')" data-i18n="ordersFilterActive">在途</button>
+      <button class="btn btn-sm btn-outline" onclick="renderOrders('delivered')" data-i18n="ordersFilterDone">已交付</button>
+    </div>
+  </div>
+  <div id="orderList"></div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderDetailModal"><div class="modal" style="max-width:620px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h3 id="orderDetailTitle" style="margin:0;font-size:16px">📦 订单详情</h3>
+    <button class="btn btn-sm" style="background:#eee" onclick="closeModal('orderDetailModal')">✕</button>
+  </div>
+  <div id="orderDetailContent"></div>
+</div></div>
+
 <!-- ADMIN PANEL -->
 <div class="panel" id="panel-admin">
   <div class="card">
@@ -1110,7 +1187,7 @@ const I18N = {
     preview:"👁 预览", downloadFile:"⬇ 下载", close:"关闭",
     filesUploaded:"个文件已上传", fileDeleted:"已删除", deleteFileConfirm:"确认删除此文件？",
     previewNotAvailable:"暂不支持预览此格式",
-    tabDirect:"📋 直接报价", registerTitle:"👤 注册账号", registerHint:"注册后自动分配角色，后续对接Supabase Auth",
+    tabDirect:"📋 直接报价", tabOrders:"📦 订单管理", tabOrdersDesc:"报价确认成交后自动生成订单", registerTitle:"👤 注册账号", registerHint:"注册后自动分配角色，后续对接Supabase Auth",
     nameLabel:"姓名", passwordLabel:"密码", regRoleLabel:"注册角色",
     registerBtn:"📝 注册", loginBtn:"🔑 登录", clickToRegister:"👤 点击注册/登录",
     uploadDialogTitle:"📎 上传 CI / PL", uploadHsLabel:"关联 HS 编码", uploadDocType:"文件类型",
@@ -1120,6 +1197,18 @@ const I18N = {
     directWeight:"货物重量 (kg)", directNote:"备注", directSubmitBtn:"📤 提交给美方报价",
     directRespondTitle:"📋 回传最终报价", directRespondBtn:"📤 回传最终报价",
     directSubmitted:"直接报价请求已提交", directResponded:"报价已回传",
+    // Orders
+    ordersTitle:"📦 订单管理", ordersDesc:"报价确认成交后自动生成订单，追踪物流全流程",
+    ordersEmpty:"暂无订单，确认成交后自动生成",
+    ordersFilterAll:"全部", ordersFilterActive:"在途", ordersFilterDone:"已交付",
+    orderStatus_processing:"备货中", orderStatus_shipping:"运输中", orderStatus_customs:"清关中",
+    orderStatus_delivering:"派送中", orderStatus_delivered:"已交付",
+    logisticsFactory:"🏭 工厂出货", logisticsInland:"🚛 陆运", logisticsOcean:"🚢 海运",
+    logisticsCustoms:"🛃 清关", logisticsDelivery:"📦 交付",
+    logisticsUpdateTitle:"📝 更新物流状态", logisticsUpdateBtn:"更新状态",
+    logisticsETA:"预计到港", logisticsVessel:"船名/航次",
+    orderNumber:"订单号", orderAmount:"订单金额", orderClient:"客户",
+    orderCreatedAt:"创建时间", orderNoData:"订单数据加载中...",
     noDirectRequests:"暂无直接报价请求", responded:"已回传",
     profitCheckTitle:"利润空间不足 — 必须填写说明",
     profitCheckWarning:"当前美方报价超出上限（终端客户报价=关税×80%−中方利润=货值×5%）。如需继续提交，必须填写详细原因说明。",
@@ -1191,7 +1280,7 @@ const I18N = {
     preview:"👁 Preview", downloadFile:"⬇ Download", close:"Close",
     filesUploaded:"file(s) uploaded", fileDeleted:"Deleted", deleteFileConfirm:"Delete this file?",
     previewNotAvailable:"Preview not available for this format",
-    tabDirect:"📋 Direct Quote", registerTitle:"👤 Register", registerHint:"Role auto-assigned on registration. Supabase Auth coming.",
+    tabDirect:"📋 Direct Quote", tabOrders:"📦 Orders", tabOrdersDesc:"Auto-generated after confirmed quote", registerTitle:"👤 Register", registerHint:"Role auto-assigned on registration. Supabase Auth coming.",
     nameLabel:"Name", passwordLabel:"Password", regRoleLabel:"Role",
     registerBtn:"📝 Register", loginBtn:"🔑 Quick Login", clickToRegister:"👤 Click to Register/Login",
     uploadDialogTitle:"📎 Upload CI / PL", uploadHsLabel:"Link to HS Code", uploadDocType:"Doc Type",
@@ -1471,7 +1560,7 @@ function refreshApproverSelect(){
 refreshApproverSelect();
 
 function switchTab(name) {
-  ['dashboard','tariff','direct','approval','clients','files','history','ddp','admin'].forEach((n,i)=>{
+  ['dashboard','tariff','direct','approval','clients','files','history','ddp','orders','admin'].forEach((n,i)=>{
     const tab = document.querySelectorAll('.tab')[i];
     if(tab) tab.classList.toggle('active', n===name);
     const panel = document.getElementById('panel-'+n);
@@ -1484,6 +1573,7 @@ function switchTab(name) {
   if(name==='files'){ refreshQuoteFilter(); renderFiles(); }
   if(name==='clients') renderClients();
   if(name==='admin') renderAdminPanel();
+  if(name==='orders') renderOrders();
   if(name==='bulletin'){ switchTab('dashboard'); setTimeout(()=>document.getElementById('bulletinBoard')?.scrollIntoView({behavior:'smooth'}),300); }
   // Update bottom nav
   document.querySelectorAll('.bottom-nav .bn-item').forEach(item=>{
@@ -2223,25 +2313,30 @@ async function sendLocalPush(title, body, targetTab){
 
 // ========== CONFIRM DEAL (CN clicks after US approves/responds) ==========
 function confirmDeal(id, type){
+  let createdOrder = null;
   if(type==='quote'){
     const q = approvalQueue.find(a=>a.id===id);
     if(!q) return;
     q.status = 'confirmed';
     saveApprovalQueue();
     closeModal('approvalDetailModal');
-    toast(`🎯 ${t('confirmedLabel')} — ${q.hs} ${q.name} | 收入 $${(q.total||0).toLocaleString()}`);
-    sendLocalPush('🎯 交易已确认', `${q.hs} ${q.name} — 收入 $${(q.total||0).toLocaleString()}`, 'dashboard');
-    renderApproval();
-    renderDashboard();
+    // v2.0: Auto-create order
+    if(!orders.find(o=>o.quoteId===q.id)) createdOrder = createOrderFromQuote(q);
+    const msg='🎯 交易已确认 — '+q.hs+' '+q.name+' | 收入 $'+(q.total||0).toLocaleString()+(createdOrder?'\n📦 订单 '+createdOrder.id+' 已自动生成':'');
+    toast(msg);
+    sendLocalPush('🎯 交易已确认', `${q.hs} ${q.name} — 收入 $${(q.total||0).toLocaleString()}${createdOrder?' | 订单 '+createdOrder.id:''}`, 'dashboard');
+    renderApproval(); renderDashboard();
   } else if(type==='direct'){
     const r = directRequests.find(d=>d.id===id);
     if(!r) return;
     r.status = 'confirmed';
     saveDirectRequests();
-    toast(`🎯 ${t('confirmedLabel')} — ${r.hs} ${r.name} | 收入 $${(r.response?.total||0).toLocaleString()}`);
-    sendLocalPush('🎯 交易已确认', `${r.hs} ${r.name} — 收入 $${(r.response?.total||0).toLocaleString()}`, 'dashboard');
-    renderDirectRequests();
-    renderDashboard();
+    // v2.0: Auto-create order for direct quotes
+    if(!orders.find(o=>o.quoteId===r.id)) createdOrder = createOrderFromQuote(r);
+    const msg2='🎯 交易已确认 — '+r.hs+' '+r.name+' | 收入 $'+((r.response?.total||0)).toLocaleString()+(createdOrder?'\n📦 订单 '+createdOrder.id+' 已自动生成':'');
+    toast(msg2);
+    sendLocalPush('🎯 交易已确认', `${r.hs} ${r.name} — 收入 $${(r.response?.total||0).toLocaleString()}${createdOrder?' | 订单 '+createdOrder.id:''}`, 'dashboard');
+    renderDirectRequests(); renderDashboard();
   }
 }
 
@@ -3487,6 +3582,127 @@ ${r.response.note?`<div style="padding:12px;background:#f8f9fd;border-radius:8px
   openQuotePreview(html, `乾翔关务报价单_${r.hs}_${r.name}.html`);
 }
 
+// ========== ORDERS (v2.0) ==========
+let orders = JSON.parse(localStorage.getItem('le_orders')||'[]');
+const ORDER_STATUSES = ['processing','shipping','customs','delivering','delivered'];
+const LOGISTICS_STEPS = [
+  {key:'factory', icon:'🏭', label:'工厂出货'},
+  {key:'inland', icon:'🚛', label:'陆运'},
+  {key:'ocean', icon:'🚢', label:'海运'},
+  {key:'customs', icon:'🛃', label:'清关'},
+  {key:'delivery', icon:'📦', label:'交付'}
+];
+function saveOrders(){ localStorage.setItem('le_orders',JSON.stringify(orders)); }
+function getOrderStatusLabel(s){
+  const m={'processing':'备货中','shipping':'运输中','customs':'清关中','delivering':'派送中','delivered':'已交付'};
+  return m[s]||s;
+}
+function getOrderStatusClass(s){ return 'status-'+s; }
+function generateOrderNumber(){
+  const d=new Date(); return 'ORD-'+d.getFullYear().toString().slice(-2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+(orders.length+1).toString().padStart(3,'0');
+}
+function createOrderFromQuote(q){
+  const ord = {
+    id: generateOrderNumber(),
+    quoteId: q.id, hs: q.hs||'', name: q.name||'', client: q.client||'', company: q.companyName||'',
+    type: q.type||'tariff', total: q.total||0, cargoValue: q.cargoValue||q.exw||0,
+    status: 'processing', createdAt: new Date().toISOString(),
+    logistics: {factory:{status:'done',time:new Date().toISOString(),note:'订单确认，等待工厂排产'},inland:{status:'pending',time:'',note:''},ocean:{status:'pending',time:'',note:'',eta:'',vessel:'',voyage:''},customs:{status:'pending',time:'',note:''},delivery:{status:'pending',time:'',note:''}},
+    trackingNo: '', vessel: '', voyage: '', eta: ''
+  };
+  orders.unshift(ord); saveOrders(); return ord;
+}
+function getOrder(id){ return orders.find(o=>o.id===id); }
+function getLogisticsStepIndex(order){
+  for(let i=0;i<LOGISTICS_STEPS.length;i++){
+    const s=LOGISTICS_STEPS[i];
+    if(order.logistics[s.key].status==='active') return i;
+    if(order.logistics[s.key].status==='pending') return i;
+  }
+  return LOGISTICS_STEPS.length-1;
+}
+function renderOrders(filter='all'){
+  const list=document.getElementById('orderList'); if(!list) return;
+  let filtered=orders;
+  if(filter==='active') filtered=orders.filter(o=>o.status!=='delivered');
+  else if(filter==='delivered') filtered=orders.filter(o=>o.status==='delivered');
+  document.querySelectorAll('#panel-orders .btn-outline').forEach((b,i)=>{
+    const f=['all','active','delivered'][i];
+    b.style.background = f===filter ? 'var(--navy)' : ''; b.style.color = f===filter ? '#fff' : '';
+  });
+  if(!filtered.length){ list.innerHTML=`<div class="card" style="text-align:center;padding:40px;color:rgba(255,255,255,0.5)"><p style="font-size:48px;margin-bottom:8px">📦</p><p>暂无订单，确认成交报价后自动生成</p></div>`; return; }
+  let html='';
+  filtered.forEach(o=>{
+    const stepIdx=getLogisticsStepIndex(o); const c=o.company||o.client||'—';
+    let bar='<div class="logistics-bar">';
+    LOGISTICS_STEPS.forEach((s,i)=>{
+      let cls=''; if(i<stepIdx) cls='done'; else if(i===stepIdx) cls='active';
+      bar+=`<div class="logistics-step ${cls}"><div class="logistics-step-label">${s.icon}</div></div>`;
+    });
+    bar+='</div>';
+    html+=`<div class="order-card" onclick="showOrderDetail('${o.id}')">
+      <div class="order-card-header"><span class="order-card-id">📦 ${o.id}</span><span class="order-card-status ${getOrderStatusClass(o.status)}">${getOrderStatusLabel(o.status)}</span></div>
+      <div class="order-card-body"><span><strong>HS</strong> ${o.hs}</span><span><strong>品名</strong> ${o.name}</span><span><strong>客户</strong> ${c}</span><span><strong>金额</strong> $${Number(o.total||0).toLocaleString()}</span></div>
+      ${bar}</div>`;
+  });
+  list.innerHTML=html;
+}
+function showOrderDetail(orderId){
+  const o=getOrder(orderId); if(!o) return;
+  const fmt=(n)=>'$'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
+  const c=o.company||o.client||'—';
+  let logHtml='';
+  LOGISTICS_STEPS.forEach((s,i)=>{
+    const d=o.logistics[s.key]; let cls='';
+    if(d.status==='done') cls='done'; else if(d.status==='active') cls='active';
+    const statusTxt=d.status==='done'?'✅ 已完成':d.status==='active'?'⏳ 进行中':'⬜ 待开始';
+    let meta=''; if(d.time) meta+=`<div class="logistics-node-meta">时间：${new Date(d.time).toLocaleString('zh-CN')}</div>`;
+    if(d.note) meta+=`<div class="logistics-node-meta">${d.note}</div>`;
+    if(d.eta) meta+=`<div class="logistics-node-meta"><strong>预计到港：</strong>${d.eta}</div>`;
+    if(d.vessel) meta+=`<div class="logistics-node-meta"><strong>船名：</strong>${d.vessel} | <strong>航次：</strong>${d.voyage}</div>`;
+    logHtml+=`<div class="logistics-node ${cls}"><div class="logistics-node-icon">${s.icon}</div><div class="logistics-node-info"><div class="logistics-node-title">${statusTxt} — ${s.label}</div>${meta}</div></div>`;
+  });
+  let adminHtml='';
+  const curUser=registeredUsers.find(u=>u.id===currentUserId);
+  if(curUser&&curUser.role==='admin'){
+    adminHtml=`<div style="margin-top:16px;padding:14px;background:#f8f9fd;border-radius:10px;border:1px solid #eef0f5"><div style="font-weight:700;margin-bottom:10px;font-size:14px">📝 更新物流状态</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">`;
+    ORDER_STATUSES.forEach(s=>{adminHtml+=`<button class="btn btn-sm" style="background:${o.status===s?'var(--navy)':'#eee'};color:${o.status===s?'#fff':'#333'}" onclick="updateOrderStatus('${o.id}','${s}')">${getOrderStatusLabel(s)}</button>`;});
+    adminHtml+=`</div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><select id="logisticsStep_${o.id}" style="padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px">`;
+    LOGISTICS_STEPS.forEach(s=>{adminHtml+=`<option value="${s.key}">${s.icon} ${s.label}</option>`;});
+    adminHtml+=`</select><input id="logisticsNote_${o.id}" placeholder="备注（如：已抵达上海港）" style="flex:1;min-width:120px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px"><input id="logisticsETA_${o.id}" placeholder="ETA" type="date" style="padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;width:130px"><button class="btn btn-gold btn-sm" onclick="updateLogisticsStep('${o.id}')" style="font-weight:600;white-space:nowrap">✅ 更新</button></div></div>`;
+  }
+  const content=`<div style="background:var(--bg-card);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:12px"><div><span style="color:var(--text-muted)">HS 编码</span><br><strong>${o.hs}</strong></div><div><span style="color:var(--text-muted)">商品名称</span><br><strong>${o.name}</strong></div><div><span style="color:var(--text-muted)">客户公司</span><br><strong>${c}</strong></div><div><span style="color:var(--text-muted)">订单金额</span><br><strong style="color:var(--navy);font-size:18px">${fmt(o.total)}</strong></div><div><span style="color:var(--text-muted)">创建时间</span><br><strong>${new Date(o.createdAt).toLocaleString('zh-CN')}</strong></div><div><span style="color:var(--text-muted)">当前状态</span><br><span class="order-card-status ${getOrderStatusClass(o.status)}" style="display:inline-block">${getOrderStatusLabel(o.status)}</span></div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid #eef0f5"><div style="font-weight:700;font-size:14px;margin-bottom:10px">🚢 物流追踪</div>${logHtml}</div></div>${adminHtml}`;
+  document.getElementById('orderDetailTitle').innerHTML=`📦 订单详情 — ${o.id}`;
+  document.getElementById('orderDetailContent').innerHTML=content;
+  document.getElementById('orderDetailModal').classList.add('show');
+}
+function updateOrderStatus(orderId, newStatus){
+  const o=getOrder(orderId); if(!o) return; o.status=newStatus;
+  const stepMap={'processing':'factory','shipping':'inland','customs':'ocean','delivering':'customs','delivered':'delivery'};
+  const curKey=stepMap[newStatus];
+  Object.keys(o.logistics).forEach(k=>{
+    if(k===curKey) o.logistics[k].status='active';
+    else if(LOGISTICS_STEPS.findIndex(s=>s.key===k) < LOGISTICS_STEPS.findIndex(s=>s.key===curKey)) o.logistics[k].status='done';
+    else o.logistics[k].status='pending';
+  });
+  if(curKey&&o.logistics[curKey]&&!o.logistics[curKey].time) o.logistics[curKey].time=new Date().toISOString();
+  if(newStatus==='delivered') LOGISTICS_STEPS.forEach(s=>o.logistics[s.key].status='done');
+  saveOrders(); showOrderDetail(orderId); renderOrders();
+}
+function updateLogisticsStep(orderId){
+  const o=getOrder(orderId); if(!o) return;
+  const stepKey=document.getElementById('logisticsStep_'+orderId)?.value;
+  const note=document.getElementById('logisticsNote_'+orderId)?.value||'';
+  const eta=document.getElementById('logisticsETA_'+orderId)?.value||'';
+  if(!stepKey) return;
+  const stepIdx=LOGISTICS_STEPS.findIndex(s=>s.key===stepKey);
+  LOGISTICS_STEPS.forEach((s,i)=>{ if(i<stepIdx) o.logistics[s.key].status='done'; else if(i===stepIdx) o.logistics[s.key].status='active'; else o.logistics[s.key].status='pending'; });
+  if(note) o.logistics[stepKey].note=note; if(eta){o.logistics[stepKey].eta=eta; o.eta=eta;}
+  o.logistics[stepKey].time=o.logistics[stepKey].time||new Date().toISOString();
+  const vMatch=note.match(/船名[:：]?\s*(.+)/); if(vMatch){o.vessel=vMatch[1].trim(); o.logistics[stepKey].vessel=o.vessel;}
+  const vyMatch=note.match(/航次[:：]?\s*(.+)/); if(vyMatch){o.voyage=vyMatch[1].trim(); o.logistics[stepKey].voyage=o.voyage;}
+  saveOrders(); showOrderDetail(orderId); renderOrders();
+}
 </script>
 <div id="soundToggle" class="sound-toggle on" onclick="toggleSound()" title="声音提醒">🔊</div>
 <div id="versionFooter" style="text-align:center;font-size:10px;color:rgba(255,255,255,0.2);padding:12px 0 20px;margin-top:8px">
