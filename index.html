@@ -1232,6 +1232,55 @@ const I18N = {
     totalQuotes:"总报价数", totalRevenueLabel:"累计收入", recentActivity:"🕐 最近动态",
     confirmedLabel:"已成交", confirmDealBtn:"🎯 确认成交", confirmDealHint:"与客户达成协议后点击确认，收入计入看板统计",
     clientsTitle:"👥 客户管理",
+    authFillFields:"请填写姓名和密码", authPending:"该姓名正在等待管理员审批 ⏳",
+    authRejected:"该姓名已被管理员拒绝注册 ❌", authExists:"该姓名已注册，请直接登录",
+    authRegSubmitted:"⏳ 注册已提交 - 请等待管理员审批后登录",
+    authNotFound:"❌ 账号不存在，请先注册", authPending2:"⏳ 账号等待管理员审批中",
+    authRejected2:"❌ 账号已被管理员拒绝", authWrongPwd:"❌ 密码错误",
+    authLoggedIn:"🔑 已登录", authLoggedOut:"👋 已退出登录", authMustLogin:"请先登录",
+    bulletinEmpty:"暂无公告", bulletinContentRequired:"请输入公告内容", bulletinPosted:"📢 公告已发布",
+    bulletinNewPush:"📢 新公告",
+    adminApproved:"已通过审批", adminRejectedText:"已拒绝", adminBlocked:"已禁用",
+    adminConfirmReject:"确定拒绝此注册申请？", adminConfirmBlock:"确定禁用该用户？将无法登录。",
+    adminWaitingUS:"⏳ 等待美方团队审批...", adminLostReason:"流失原因", adminLostUnknown:"未记录",
+    adminMoreRecords:"还有 ... 条记录", adminCNLeRate:"中方 LE打包关税率",
+    adminExportQuote:"📄 导出报价单", adminExportQuoteApproved:"📄 导出报价单 (已批准)",
+    adminBtnApprove:"✅ 通过", adminBtnReject:"❌ 拒绝", adminBtnBlock:"⛔ 禁用", adminBtnRestore:"↩ 恢复",
+    counterOfferFill:"请填写有效的还盘数据 ❗", counterOfferSubmitted:"还盘已提交", counterOfferPush:"✋ 还盘已提交",
+    lostReasonRequired:"⚠️ 请填写客户流失原因", lostRecorded:"🚫 已记录客户流失", lostPush:"🚫 客户流失",
+    filesClickToSelect:"📁 点击此处选择文件", filesAllHs:"— 全部文件 —",
+    filesSelectFirst:"⚠️ 请先点上方文件框选择文件",
+    exportNoData:"没有可导出的数据", exportNoData2:"无数据可导出",
+    exportDownloading:"📥 正在下载 — 检查浏览器下载列表", exportDownloaded:"📥 已下载 ",
+    exportSaveFailed:"保存失败: ", exportReadFailed:"读取失败，请重试", exportQuoteNotFound:"报价未找到",
+    exportPrintDialog:"🖨️ 正在打开打印对话框...", exportPendingDownload:"⚠️ 没有待下载内容",
+    pushTestSent:"📤 测试推送已发送！", pushFailed:"⚠️ 推送失败", pushEnableFirst:"⚠️ 请先开启通知",
+    pushPermissionDenied:"⚠️ 请在系统设置中开启通知权限",
+    searchPlaceholderJS:"输入关键字开始搜索...", searchNoMatch:"🔍 未找到匹配结果",
+    statusPending:"⏳ 待审批", statusApproved:"✅ 已同意", statusRejected:"❌ 已拒绝",
+    statusPendingResp:"⏳ 待回传", statusResponded:"✅ 已回传", statusConfirmed:"✅ 已成交", statusLost:"🚫 客户流失",
+    roleAdmin:"🛡️ 管理员", roleUS:"🇺🇸 美方团队", roleCN:"🇨🇳 中方团队",
+    roleAdminShort:"管理员", roleUSShort:"美方", roleCNShort:"中方",
+    clientsEmpty:"暂无客户数据", clientsQuotes:"条报价", clientsRecent:"最近:",
+    activityNone:"暂无活动", historyNoMatch:"无匹配数据",
+    orderEmpty:"暂无订单，确认成交报价后自动生成", orderUpdateTitle:"📝 更新物流状态",
+    orderInitialNote:"订单确认，等待工厂排产",
+    orderLogisticsDone:"✅ 已完成", orderLogisticsActive:"⏳ 进行中", orderLogisticsPending:"⬜ 待开始",
+    orderETA:"预计到港", orderVessel:"船名", orderVoyage:"航次",
+    orderFieldHS:"HS编码", orderFieldName:"商品名称", orderFieldCompany:"客户公司",
+    orderFieldAmount:"订单金额", orderFieldCreated:"创建时间", orderFieldStatus:"当前状态", orderFieldLogistics:"🚢 物流追踪",
+    orderCardHS:"HS", orderCardProduct:"品名", orderCardClient:"客户", orderCardAmount:"金额",
+    orderNotePlaceholder:"备注（如：已抵达上海港）",
+    ddpUnfilled:"(未填写)",
+    dashNewQuotePush:"📋 新报价待审批", dashApprovedPush:"👍 报价已批准", dashApprovedPush2:"已批准，可确认成交",
+    dealConfirmed:"🎯 交易已确认", dealPush:"🎯 交易已确认", dealAutoGenWord:"已自动生成", dealWord:"订单",
+    directClientRequired:"客户名称和EXW价格必填", directUSOnly:"美方角色才能回传报价",
+    directLEFill:"请填写 LE 打包关税率", directPendingLabel:"📋 直接报价 - 待美方回传",
+    directRespondBtn2:"📤 回传报价",
+    clipboardCopied:"📋 已复制", clipboardLongPress:"长按操作 - 复制信息到剪贴板？",
+    loginPrompt:"👤 点击注册/登录",
+    commentPlaceholderJS:"写评论...", commentSendJS:"发送",
+    approverUnregistered:" (未注册)",
     tariff:["锂离子蓄电池","碳纤维制品","钢结构件","肽类化合物","生物油脂"],
   },
   en: {
@@ -1472,12 +1521,12 @@ function doRegister(){
   const name = document.getElementById('regName').value.trim();
   const pwd = document.getElementById('regPassword').value.trim();
   const role = document.getElementById('regRole').value;
-  if(!name||!pwd){ toast('请填写姓名和密码'); return; }
+  if(!name||!pwd){ toast(t('authFillFields')); return; }
   const exists = registeredUsers.find(u=>u.name===name);
   if(exists){
-    if(exists.status==='pending'){ toast('该姓名正在等待管理员审批 ⏳'); return; }
-    if(exists.status==='rejected'){ toast('该姓名已被管理员拒绝注册 ❌'); return; }
-    toast('该姓名已注册，请直接登录'); return;
+    if(exists.status==='pending'){ toast(t('authPending')); return; }
+    if(exists.status==='rejected'){ toast(t('authRejected')); return; }
+    toast(t('authExists')); return;
   }
   const user = {
     id:'U-'+Date.now().toString(36).toUpperCase(), name, role,
@@ -1493,7 +1542,7 @@ function doRegister(){
 function doLogin(){
   const name = document.getElementById('regName').value.trim();
   const pwd = document.getElementById('regPassword').value.trim();
-  if(!name||!pwd){ toast('请填写姓名和密码'); return; }
+  if(!name||!pwd){ toast(t('authFillFields')); return; }
   const user = registeredUsers.find(u=>u.name===name);
   if(!user){ toast('❌ 账号不存在，请先注册'); return; }
   if(user.status==='pending'){ toast('⏳ 账号等待管理员审批中'); return; }
@@ -2001,7 +2050,56 @@ function openSubmitModal(type) {
         <tr style="background:#f0f4ff;font-weight:700"><td>${t('landedCost')}</td><td><span id=\"editLandedShow\">$${fmt(autoLanded)}</span></td></tr>
         <tr style="background:#fff8e1;font-weight:700"><td>${t('serviceFee')}</td><td><span id=\"editServiceShow\">$${fmt(autoService)}</span></td></tr>
         <tr style="background:#e8f5e9;font-weight:700"><td>${t('clientTotal')}</td><td><span id=\"editTotalShow\" style=\"color:#2e7d32;font-size:16px\">$${fmt(autoClient)}</span></td></tr>
-      </tbody></table>`;
+      </tbody></table>`;    authFillFields:"Please enter name and password", authPending:"Registration pending admin approval",
+    authRejected:"This name was rejected by admin", authExists:"Name already registered. Please login.",
+    authRegSubmitted:"Registration submitted - awaiting admin approval",
+    authNotFound:"Account not found. Please register.", authPending2:"Account pending admin approval",
+    authRejected2:"Account rejected by admin", authWrongPwd:"Wrong password",
+    authLoggedIn:"Logged in", authLoggedOut:"Logged out", authMustLogin:"Please login first",
+    bulletinEmpty:"No bulletins", bulletinContentRequired:"Please enter bulletin content", bulletinPosted:"Bulletin posted",
+    bulletinNewPush:"New Bulletin",
+    adminApproved:"approved", adminRejectedText:"rejected", adminBlocked:"blocked",
+    adminConfirmReject:"Reject this registration?", adminConfirmBlock:"Block this user? They will be unable to login.",
+    adminWaitingUS:"Awaiting US team approval...", adminLostReason:"Lost reason", adminLostUnknown:"Not recorded",
+    adminMoreRecords:" more records", adminCNLeRate:"CN LE Package Rate",
+    adminExportQuote:"Export Quote", adminExportQuoteApproved:"Export Quote (Approved)",
+    adminBtnApprove:"Approve", adminBtnReject:"Reject", adminBtnBlock:"Block", adminBtnRestore:"Restore",
+    counterOfferFill:"Please enter valid counter-offer data", counterOfferSubmitted:"Counter-offer submitted", counterOfferPush:"Counter-offer submitted",
+    lostReasonRequired:"Please enter reason for customer loss", lostRecorded:"Customer loss recorded", lostPush:"Customer Lost",
+    filesClickToSelect:"Click to select files", filesAllHs:"— All HS Codes —",
+    filesSelectFirst:"Please select files first",
+    exportNoData:"No data to export", exportNoData2:"No data available",
+    exportDownloading:"Downloading — check browser downloads", exportDownloaded:"Downloaded ",
+    exportSaveFailed:"Save failed: ", exportReadFailed:"Read failed, please retry", exportQuoteNotFound:"Quote not found",
+    exportPrintDialog:"Opening print dialog...", exportPendingDownload:"Nothing to download",
+    pushTestSent:"Test push sent!", pushFailed:"Push failed", pushEnableFirst:"Please enable notifications first",
+    pushPermissionDenied:"Enable notification permission in system settings",
+    searchPlaceholderJS:"Type keywords to search...", searchNoMatch:"No results found",
+    statusPending:"Pending", statusApproved:"Approved", statusRejected:"Rejected",
+    statusPendingResp:"Awaiting Reply", statusResponded:"Responded", statusConfirmed:"Confirmed", statusLost:"Customer Lost",
+    roleAdmin:"Admin", roleUS:"US Team", roleCN:"CN Team",
+    roleAdminShort:"Admin", roleUSShort:"US", roleCNShort:"CN",
+    clientsEmpty:"No client data", clientsQuotes:" quotes", clientsRecent:"Recent:",
+    activityNone:"No recent activity", historyNoMatch:"No matching data",
+    orderEmpty:"No orders. Auto-generated after confirmed quotes.", orderUpdateTitle:"Update Logistics",
+    orderInitialNote:"Order confirmed, awaiting factory production",
+    orderLogisticsDone:"Completed", orderLogisticsActive:"In Progress", orderLogisticsPending:"Pending",
+    orderETA:"ETA", orderVessel:"Vessel", orderVoyage:"Voyage",
+    orderFieldHS:"HS Code", orderFieldName:"Product Name", orderFieldCompany:"Client Company",
+    orderFieldAmount:"Order Amount", orderFieldCreated:"Created", orderFieldStatus:"Status", orderFieldLogistics:"Logistics Tracking",
+    orderCardHS:"HS", orderCardProduct:"Product", orderCardClient:"Client", orderCardAmount:"Amount",
+    orderNotePlaceholder:"Note (e.g. Arrived at Shanghai port)",
+    ddpUnfilled:"(not set)",
+    dashNewQuotePush:"New quote for review", dashApprovedPush:"Quote approved", dashApprovedPush2:"Approved, ready to confirm",
+    dealConfirmed:"Deal Confirmed", dealPush:"Deal Confirmed", dealAutoGenWord:"auto-generated", dealWord:"Order",
+    directClientRequired:"Client name and EXW price required", directUSOnly:"US team role required to respond",
+    directLEFill:"Please enter LE package duty rate", directPendingLabel:"Direct Quote - Awaiting US response",
+    directRespondBtn2:"Respond with Quote",
+    clipboardCopied:"Copied", clipboardLongPress:"Long press - Copy info to clipboard?",
+    loginPrompt:"Click to Register/Login",
+    commentPlaceholderJS:"Write comment...", commentSendJS:"Send",
+    approverUnregistered:" (unregistered)",
+
   }
 
   const companyName = document.getElementById('companyName')?.value.trim() || '';
