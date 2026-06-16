@@ -3789,8 +3789,8 @@ function updateLogisticsStep(orderId){
     d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 })();
 </script>
-<!-- Supabase SDK: jsDelivr + unpkg fallback -->
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'"></script>
+<!-- Supabase SDK: 内嵌本地，不依赖CDN -->
+<script defer src="supabase.min.js"></script>
 <script defer>
 const SUPABASE_URL = 'https://nhfhwbnhibqyqdxpclkc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_sHwxc_z2DOS4wIxI8bEWSA_dX3UDB9J';
