@@ -2,20 +2,20 @@
 // Hybrid: Supabase → localStorage fallback
 // Run after supabase client is initialized (in index.html <head>)
 
+function getSupabase(){ return window.supabaseClient || null; }
 const DB = {
-  // --- Users ---
   async getUsers() {
-    if(supabase) {
-      const { data, error } = await supabase.from('profiles').select('*').order('created_at');
+    if(getSupabase()) {
+      const { data, error } = await getSupabase().from('profiles').select('*').order('created_at');
       if(!error) return data.map(u=>({id:u.id,name:u.name,role:u.role,password:u.password,status:u.status,createdAt:u.created_at,approvedBy:u.approved_by}));
     }
     return JSON.parse(localStorage.getItem('le_users')||'[]');
   },
   async saveUsers(users) {
     localStorage.setItem('le_users', JSON.stringify(users));
-    if(supabase) {
+    if(getSupabase()) {
       for(const u of users) {
-        await supabase.from('profiles').upsert({
+        await getSupabase().from('profiles').upsert({
           id: u.id, name: u.name, role: u.role, password: u.password||'',
           status: u.status, created_at: u.createdAt, approved_by: u.approvedBy||null
         }, {onConflict:'id'});
@@ -25,17 +25,17 @@ const DB = {
 
   // --- Quotes (approval) ---
   async getQuotes() {
-    if(supabase) {
-      const { data, error } = await supabase.from('quotes').select('*').order('submitted_at',{ascending:false});
+    if(getSupabase()) {
+      const { data, error } = await getSupabase().from('quotes').select('*').order('submitted_at',{ascending:false});
       if(!error) return data.map(q=>({...q, submittedAt:q.submitted_at, cargoValue:q.cargo_value, leRate:q.le_rate, leDuty:q.le_duty, brokerFee:q.broker_fee, companyName:q.company_name, createdAt:q.created_at}));
     }
     return JSON.parse(localStorage.getItem('le_approval_queue')||'[]');
   },
   async saveQuotes(quotes) {
     localStorage.setItem('le_approval_queue', JSON.stringify(quotes));
-    if(supabase) {
+    if(getSupabase()) {
       for(const q of quotes) {
-        await supabase.from('quotes').upsert({
+        await getSupabase().from('quotes').upsert({
           id: q.id, hs: q.hs, name: q.name, type: q.type, approver: q.approver, note: q.note,
           status: q.status, tag: q.tag||'regular', company_name: q.companyName||'',
           submitted_at: q.submittedAt, mfn: q.mfn, s301: q.s301, s122: q.s122,
@@ -50,17 +50,17 @@ const DB = {
 
   // --- Direct Requests ---
   async getDirectRequests() {
-    if(supabase) {
-      const { data, error } = await supabase.from('direct_requests').select('*').order('submitted_at',{ascending:false});
+    if(getSupabase()) {
+      const { data, error } = await getSupabase().from('direct_requests').select('*').order('submitted_at',{ascending:false});
       if(!error) return data.map(r=>({...r, submittedAt:r.submitted_at}));
     }
     return JSON.parse(localStorage.getItem('le_direct_requests')||'[]');
   },
   async saveDirectRequests(requests) {
     localStorage.setItem('le_direct_requests', JSON.stringify(requests));
-    if(supabase) {
+    if(getSupabase()) {
       for(const r of requests) {
-        await supabase.from('direct_requests').upsert({
+        await getSupabase().from('direct_requests').upsert({
           id: r.id, hs: r.hs, name: r.name, client: r.client, exw: r.exw,
           weight: r.weight, note: r.note, status: r.status,
           submitted_at: r.submittedAt, response: r.response
@@ -71,17 +71,17 @@ const DB = {
 
   // --- Bulletins ---
   async getBulletins() {
-    if(supabase) {
-      const { data, error } = await supabase.from('bulletins').select('*').order('created_at',{ascending:false}).limit(50);
+    if(getSupabase()) {
+      const { data, error } = await getSupabase().from('bulletins').select('*').order('created_at',{ascending:false}).limit(50);
       if(!error) return data.map(b=>({id:b.id,content:b.content,author:b.author,role:b.role,createdAt:b.created_at}));
     }
     return JSON.parse(localStorage.getItem('le_posts')||'[]');
   },
   async saveBulletins(posts) {
     localStorage.setItem('le_posts', JSON.stringify(posts));
-    if(supabase) {
+    if(getSupabase()) {
       for(const p of posts) {
-        await supabase.from('bulletins').upsert({
+        await getSupabase().from('bulletins').upsert({
           id: p.id, content: p.content, author: p.author, role: p.role, created_at: p.createdAt
         }, {onConflict:'id'});
       }
@@ -90,8 +90,8 @@ const DB = {
 
   // --- Comments ---
   async getComments() {
-    if(supabase) {
-      const { data, error } = await supabase.from('comments').select('*').order('created_at',{ascending:true});
+    if(getSupabase()) {
+      const { data, error } = await getSupabase().from('comments').select('*').order('created_at',{ascending:true});
       if(!error) {
         const map = {};
         data.forEach(c=>{ if(!map[c.post_id]) map[c.post_id]=[]; map[c.post_id].push({author:c.author,text:c.text,time:c.created_at}); });
@@ -101,8 +101,8 @@ const DB = {
     return JSON.parse(localStorage.getItem('le_comments')||'{}');
   },
   async addComment(postId, comment) {
-    if(supabase) {
-      await supabase.from('comments').insert({
+    if(getSupabase()) {
+      await getSupabase().from('comments').insert({
         post_id: postId, author: comment.author, text: comment.text, created_at: comment.time
       });
     }
@@ -114,17 +114,17 @@ const DB = {
 
   // --- Files ---
   async getFiles() {
-    if(supabase) {
-      const { data, error } = await supabase.from('files').select('*').order('uploaded_at',{ascending:false});
+    if(getSupabase()) {
+      const { data, error } = await getSupabase().from('files').select('*').order('uploaded_at',{ascending:false});
       if(!error) return data.map(f=>({...f, uploadedAt:f.uploaded_at, uploadedBy:f.uploaded_by}));
     }
     return JSON.parse(localStorage.getItem('le_files')||'[]');
   },
   async saveFiles(files) {
     localStorage.setItem('le_files', JSON.stringify(files));
-    if(supabase) {
+    if(getSupabase()) {
       for(const f of files) {
-        await supabase.from('files').upsert({
+        await getSupabase().from('files').upsert({
           id: f.id, name: f.name, type: f.type, hs: f.hs, size: f.size,
           data: f.data, uploaded_at: f.uploadedAt, uploaded_by: f.uploadedBy||'anon'
         }, {onConflict:'id'});
@@ -134,17 +134,17 @@ const DB = {
 
   // --- Orders (v2.0+) ---
   async getOrders() {
-    if(supabase) {
-      const { data, error } = await supabase.from('orders').select('*').order('created_at',{ascending:false});
+    if(getSupabase()) {
+      const { data, error } = await getSupabase().from('orders').select('*').order('created_at',{ascending:false});
       if(!error) return data.map(o=>({...o, sourceId:o.source_id, confirmedAt:o.confirmed_at, createdAt:o.created_at}));
     }
     return JSON.parse(localStorage.getItem('le_orders')||'[]');
   },
   async saveOrders(orders) {
     localStorage.setItem('le_orders', JSON.stringify(orders));
-    if(supabase) {
+    if(getSupabase()) {
       for(const o of orders) {
-        await supabase.from('orders').upsert({
+        await getSupabase().from('orders').upsert({
           id: o.id, hs: o.hs, name: o.name, company: o.company||'', client: o.client||'',
           total: o.total||0, status: o.status, logistics: o.logistics||{},
           source_id: o.sourceId, confirmed_at: o.confirmedAt, created_at: o.createdAt
@@ -155,17 +155,17 @@ const DB = {
 
   // --- Customer Lost (v1.7+) ---
   async getCustomerLost() {
-    if(supabase) {
-      const { data, error } = await supabase.from('customer_lost').select('*').order('created_at',{ascending:false});
+    if(getSupabase()) {
+      const { data, error } = await getSupabase().from('customer_lost').select('*').order('created_at',{ascending:false});
       if(!error) return data.map(c=>({...c, recordedAt:c.recorded_at, createdAt:c.created_at}));
     }
     return JSON.parse(localStorage.getItem('le_customer_lost')||'[]');
   },
   async saveCustomerLost(records) {
     localStorage.setItem('le_customer_lost', JSON.stringify(records));
-    if(supabase) {
+    if(getSupabase()) {
       for(const r of records) {
-        await supabase.from('customer_lost').upsert({
+        await getSupabase().from('customer_lost').upsert({
           id: r.id, hs: r.hs, name: r.name, company: r.company||'',
           reason: r.reason||'', recorded_at: r.recordedAt, created_at: r.createdAt||new Date().toISOString()
         }, {onConflict:'id'});

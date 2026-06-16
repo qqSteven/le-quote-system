@@ -3794,12 +3794,10 @@ function updateLogisticsStep(orderId){
 <script>
 const SUPABASE_URL = 'https://nhfhwbnhibqyqdxpclkc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_sHwxc_z2DOS4wIxI8bEWSA_dX3UDB9J';
-var supabase = null;
 (function initSupabase(){
   try {
-    const sb = window.supabase;
-    if(sb) {
-      supabase = sb.createClient(SUPABASE_URL, SUPABASE_KEY);
+    if(window.supabase) {
+      window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       console.log('✅ Supabase connected: '+SUPABASE_URL);
     } else {
       console.warn('⚠️ window.supabase undefined — Supabase SDK failed to load');
