@@ -1477,8 +1477,8 @@ let directRequests = (()=>{
 })();
 let pendingSubmit = null;
 
-function saveApprovalQueue(){ localStorage.setItem('le_approval_queue', JSON.stringify(approvalQueue)); }
-function saveDirectRequests(){ localStorage.setItem('le_direct_requests', JSON.stringify(directRequests)); }
+function saveApprovalQueue(){ localStorage.setItem('le_approval_queue', JSON.stringify(approvalQueue)); if(typeof DB !== 'undefined' && DB.saveQuotes) DB.saveQuotes(approvalQueue); }
+function saveDirectRequests(){ localStorage.setItem('le_direct_requests', JSON.stringify(directRequests)); if(typeof DB !== 'undefined' && DB.saveDirectRequests) DB.saveDirectRequests(directRequests); }
 
 function popHsDropdowns() {
   const opts = hsData.map(h => `<option value="${h.code}" data-mfn="${h.mfn}" data-s301="${h.s301}" data-s122="${h.s122}">${h.code} ${typeof h.name==='function'?h.name():h.name} (${(h.mfn+h.s301+h.s122).toFixed(1)}%)</option>`).join('');
@@ -1577,7 +1577,7 @@ let registeredUsers = (()=>{
 let currentUser = JSON.parse(localStorage.getItem('le_current_user')||'null');
 
 function saveUsersRaw(arr){ localStorage.setItem('le_users', JSON.stringify(arr)); }
-function saveUsers(){ saveUsersRaw(registeredUsers); }
+function saveUsers(){ saveUsersRaw(registeredUsers); if(typeof DB !== 'undefined' && DB.saveUsers) DB.saveUsers(registeredUsers); }
 function saveCurrentUser(){ localStorage.setItem('le_current_user', JSON.stringify(currentUser)); }
 
 function doRegister(){
@@ -2415,7 +2415,7 @@ let customerLostRecords = (()=>{
   try { return JSON.parse(localStorage.getItem('le_customer_lost')||'[]'); }
   catch(e){ return []; }
 })();
-function saveCustomerLost(){ localStorage.setItem('le_customer_lost', JSON.stringify(customerLostRecords)); }
+function saveCustomerLost(){ localStorage.setItem('le_customer_lost', JSON.stringify(customerLostRecords)); if(typeof DB !== 'undefined' && DB.saveCustomerLost) DB.saveCustomerLost(customerLostRecords); }
 function getLostReason(quoteId){
   const rec = customerLostRecords.find(r=>r.quoteId===quoteId);
   return rec ? rec.reason : null;
@@ -3663,7 +3663,7 @@ const LOGISTICS_STEPS = [
   {key:'customs', icon:'🛃', label:'清关'},
   {key:'delivery', icon:'📦', label:'交付'}
 ];
-function saveOrders(){ localStorage.setItem('le_orders',JSON.stringify(orders)); }
+function saveOrders(){ localStorage.setItem('le_orders',JSON.stringify(orders)); if(typeof DB !== 'undefined' && DB.saveOrders) DB.saveOrders(orders); }
 function getOrderStatusLabel(s){
   const m={'processing':'备货中','shipping':'运输中','customs':'清关中','delivering':'派送中','delivered':'已交付'};
   return m[s]||s;
