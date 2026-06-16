@@ -658,11 +658,8 @@ select::-ms-expand { background: white; }
   </div>
   <!-- Revenue chart -->
   <div class="card">
-    <div class="card-title">📈 收入趋势</div>
-    <div class="chart-container" id="revenueChart">
-      <svg width="100%" height="180" id="revenueSvg" style="overflow:visible"><text x="50%" y="90" text-anchor="middle" fill="rgba(255,255,255,0.2)" font-size="13">暂无数据</text></svg>
-    </div>
-  </div>
+    <di  </div>
+</div>
   <!-- Notification settings -->
   <div class="card" style="text-align:center">
     <div class="card-title" data-i18n="notifTitle">🔔 通知设置</div>
@@ -1612,7 +1609,6 @@ function renderDashboard(){
     <div class="summary-card"><div class="label">👥 ${t('tabClients')}</div><div class="value">${s.clients}</div></div>
   `;
   // Revenue chart
-  renderRevenueChart();
   // Bulletin board
   renderBulletins();
   // Recent activity
@@ -1637,43 +1633,6 @@ function renderDashboard(){
       </div>
     </div>
   `).join('');
-}
-
-// ========== REVENUE CHART ==========
-function renderRevenueChart(){
-  const svg = document.getElementById('revenueSvg');
-  if(!svg) return;
-  const all = getAllQuotes().filter(q=>q.status==='confirmed');
-  if(!all.length){
-    svg.innerHTML = '<text x="50%" y="90" text-anchor="middle" fill="rgba(255,255,255,0.2)" font-size="13">暂无成交数据</text>';
-    return;
-  }
-  // Group by month
-  const monthly = {};
-  all.forEach(q=>{
-    const m = q.date ? q.date.substring(0,7) : '???';
-    if(!monthly[m]) monthly[m]=0;
-    monthly[m] += q.total||0;
-  });
-  const months = Object.keys(monthly).sort();
-  const last6 = months.slice(-6);
-  const maxVal = Math.max(...last6.map(m=>monthly[m]), 1);
-  const w=100/last6.length, h=140, gap=8, barW=(w-gap);
-  
-  let bars='', labels='';
-  last6.forEach((m,i)=>{
-    const val = monthly[m];
-    const bh = val/maxVal*h;
-    const x = i*w+gap/2;
-    const y = h-bh+20;
-    bars += `<rect x="${x}%" y="${y}" width="${barW}%" height="${bh}" rx="4" fill="url(#barGrad)" opacity="0.85"><title>$${val.toLocaleString()}</title></rect>`;
-    labels += `<text x="${(i*w+w/2)}%" y="${h+38}" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="10">${m.substring(5)}月</text>`;
-  });
-  svg.innerHTML = `
-    <defs><linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C8A45C"/><stop offset="100%" stop-color="#0D2B5E"/></linearGradient></defs>
-    <line x1="0" y1="${h+20}" x2="100%" y2="${h+20}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-    ${bars}${labels}
-  `;
 }
 
 // ========== BULLETIN BOARD ==========
