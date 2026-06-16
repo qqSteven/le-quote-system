@@ -1259,10 +1259,14 @@ function popHsDropdowns() {
 }
 popHsDropdowns();
 
-// PDF export logo — base64 from header img (self-contained for standalone HTML)
-function getPDFLogo(){
+// PDF export logo — robust: pre-cache base64 at init, never depend on DOM query
+let PDF_LOGODATA = null;
+(function initLogoData(){
   const el = document.querySelector('.header-left img');
-  return (el && el.src && el.src.startsWith('data:image')) ? el.src : 'qx_logo_pdf.png';
+  if(el && el.src && el.src.startsWith('data:image')) PDF_LOGODATA = el.src;
+})();
+function getPDFLogo(){
+  return PDF_LOGODATA || 'https://qqsteven.github.io/le-quote-system/qx_logo_pdf.png';
 }
 
 // ========== ROLE (测试模式 — 自由切换，后续接Supabase Auth锁定) ==========
