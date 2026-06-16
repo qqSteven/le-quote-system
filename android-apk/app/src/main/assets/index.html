@@ -230,6 +230,7 @@ select::-ms-expand { background: white; }
 /* Quote preview — always on top */
 #quotePreviewModal { z-index: 200 !important; }
 #quotePreviewModal .modal { max-width: 800px; max-height: 90vh; overflow-y: auto; background: white; color: #1a1a2e; }
+#customerLostModal { z-index: 210 !important; }
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 .modal { 
   background: white; border-radius: 18px; padding: 28px; 
@@ -750,6 +751,7 @@ select::-ms-expand { background: white; }
     <button class="btn btn-sm" style="background:#d4edda" onclick="filterApproval('approved')" data-i18n="filterApproved">✅ 已同意</button>
     <button class="btn btn-sm" style="background:#c8e6c9" onclick="filterApproval('confirmed')">🎯 已成交</button>
     <button class="btn btn-sm" style="background:#f8d7da" onclick="filterApproval('rejected')" data-i18n="filterRejected">❌ 已驳回</button>
+    <button class="btn btn-sm" style="background:#ffebee" onclick="filterApproval('lost')">🚫 客户流失</button>
   </div>
   <div id="approvalList"><p style="color:rgba(255,255,255,0.5);text-align:center;padding:40px" data-i18n="noApprovals">暂无审批记录</p></div>
 </div>
@@ -1490,10 +1492,10 @@ function renderDashboard(){
     document.getElementById('recentActivity').innerHTML = `<p style="color:rgba(255,255,255,0.4);text-align:center;padding:20px">暂无活动</p>`;
     return;
   }
-  const statusLabel = { pending_review: t('pendingReview'), approved: t('agreed'), rejected: t('disagreed'), pending: t('pendingReview'), responded: t('responded'), confirmed: t('confirmedLabel') };
-  const statusClass = { pending_review:'pending', approved:'approved', rejected:'rejected', pending:'pending', responded:'approved', confirmed:'approved' };
+  const statusLabel = { pending_review: t('pendingReview'), approved: t('agreed'), rejected: t('disagreed'), pending: t('pendingReview'), responded: t('responded'), confirmed: t('confirmedLabel'), lost:'🚫 客户流失' };
+  const statusClass = { pending_review:'pending', approved:'approved', rejected:'rejected', pending:'pending', responded:'approved', confirmed:'approved', lost:'rejected' };
   document.getElementById('recentActivity').innerHTML = recent.map(q=>`
-    <div class="approval-item" style="border-left-color:${q.status==='approved'||q.status==='responded'?'#059669':q.status==='rejected'?'#dc3545':'var(--gold)'}">
+    <div class="approval-item" style="border-left-color:${q.status==='approved'||q.status==='responded'?'#059669':q.status==='rejected'||q.status==='lost'?'#dc3545':'var(--gold)'}">
       <div class="approval-row">
         <span class="approval-hs">${q.hs} ${q.name}</span>
         <span class="badge badge-${statusClass[q.status]||'pending'}">${statusLabel[q.status]||q.status}</span>
@@ -2031,7 +2033,7 @@ function renderApproval(filter='all') {
   
   // Regular approval items
   if(list.length > 0){
-    const statusMap = { pending_review: t('pendingReview'), approved: t('agreed'), rejected: t('disagreed'), confirmed: t('confirmedLabel') };
+    const statusMap = { pending_review: t('pendingReview'), approved: t('agreed'), rejected: t('disagreed'), confirmed: t('confirmedLabel'), lost:'🚫 客户流失' };
     html += list.map(q=>{
       const val = q.cargoValue || q.exw || 0;
       return `
@@ -2125,6 +2127,14 @@ function openApprovalDetail(id) {
     <div class="approval-actions">
       <p style="color:#28a745;text-align:center;font-weight:600;margin-bottom:12px">✅ ${t('confirmedLabel')}</p>
       <button class="btn btn-gold" onclick="exportQuotePDF('${q.id}','confirmed')">📄 导出报价单</button>
+    </div>`:q.status==='lost'?`
+    <div class="approval-actions">
+      <p style="color:#dc3545;text-align:center;font-weight:600;margin-bottom:8px">🚫 客户已流失</p>
+      <div style="background:#fff5f5;border:1px solid #ffcccc;border-radius:8px;padding:12px;margin-bottom:12px">
+        <strong style="color:#dc3545;font-size:12px">流失原因：</strong>
+        <p style="margin:4px 0 0;font-size:13px;color:#333">${getLostReason(q.id)||'未记录'}</p>
+      </div>
+      <button class="btn" style="background:#0D2B5E;color:#fff;width:100%" onclick="exportQuotePDF('${q.id}','lost')">📄 导出报价单</button>
     </div>`:`<p style="color:#999;margin-top:16px;text-align:center">${t('disagreed')}</p>`)}
   `;
   document.getElementById('approvalDetailModal').classList.add('show');
@@ -2201,6 +2211,10 @@ let customerLostRecords = (()=>{
   catch(e){ return []; }
 })();
 function saveCustomerLost(){ localStorage.setItem('le_customer_lost', JSON.stringify(customerLostRecords)); }
+function getLostReason(quoteId){
+  const rec = customerLostRecords.find(r=>r.quoteId===quoteId);
+  return rec ? rec.reason : null;
+}
 
 let _customerLostTarget = null;
 function openCustomerLost(id, type){
@@ -3222,8 +3236,8 @@ function exportQuotePDF(quoteId, status){
   const fmt=(n)=>'$'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
   const now = new Date().toLocaleString('zh-CN');
   const typeLabel = q.type==='tariff'?'关税优化报价':'DDP到门报价';
-  const stampText = status==='confirmed'?'✅ 已确认成交':'✅ 已批准 · 待成交';
-  const stampColor = status==='confirmed'?'#28a745':'#f0ad4e';
+  const stampText = status==='confirmed'?'✅ 已确认成交':status==='lost'?'🚫 客户流失':'✅ 已批准 · 待成交';
+  const stampColor = status==='confirmed'?'#28a745':status==='lost'?'#dc3545':'#f0ad4e';
   const origRate = (q.mfn||0)+(q.s301||0)+(q.s122||0);
   const origDuty = (q.cargoValue||0)*origRate/100;
 
