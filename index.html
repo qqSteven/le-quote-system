@@ -3229,8 +3229,32 @@ function downloadQuoteFromPreview(){
 function printQuotePreview(){
   // Try native Android print bridge first
   if(typeof AndroidPrint !== 'undefined' && AndroidPrint.print){
-    AndroidPrint.print('LE报价单');
+    // Clean up view for native PDF output: remove modal overlay + UI chrome
+    const overlay = document.getElementById('quotePreviewModal');
+    const origBg = overlay.style.background;
+    const origPos = overlay.style.position;
+    overlay.style.background = 'white';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.zIndex = '0';
+    // Hide no-print elements
+    document.querySelectorAll('#quotePreviewModal .no-print').forEach(el => el.style.display = 'none');
+    
+    AndroidPrint.print('乾翔关务报价单');
     toast('🖨️ 正在打开打印对话框...');
+    
+    // Restore after print dialog has time to capture the page
+    setTimeout(()=>{
+      overlay.style.background = origBg;
+      overlay.style.position = origPos;
+      overlay.style.top = ''; overlay.style.left = '';
+      overlay.style.width = ''; overlay.style.height = '';
+      overlay.style.zIndex = '';
+      document.querySelectorAll('#quotePreviewModal .no-print').forEach(el => el.style.display = '');
+    }, 1200);
     return;
   }
   // Fallback: window.print() with print-only style
@@ -3362,8 +3386,6 @@ function exportQuotePDF(quoteId, status){
 '\n'+
 '<div class="footer">\n'+
 '  <span class="brand">乾翔关务</span> · 四川乾翔衍庆物流科技有限公司<br>\n'+
-'  美方股东：Limitless Evolution LLC (SDVOSB 伤残退伍军人所有企业)<br>\n'+
-'  地址：中国·四川省成都市高新区天府大道北段1700号环球中心E2-1806<br>\n'+
 '  电话：18228095651（Steven） | 邮箱：Steven@qxyqtech.cn | 官网：shenghean.xyz<br>\n'+
 '  <br>本报价单为乾翔关务关税优化方案，实际税率以海关最终核定为准<br>\n'+
 '  生成时间: '+now+'\n'+
@@ -3451,8 +3473,6 @@ ${r.response.note?`<div style="padding:12px;background:#f8f9fd;border-radius:8px
 <div class="stamp" style="color:${stampColor}">${stampText}</div>
 <div class="footer">
   乾翔关务 · 四川乾翔衍庆物流科技有限公司<br>
-  美方股东：Limitless Evolution LLC (SDVOSB)<br>
-  地址：成都市高新区天府大道北段1700号环球中心E2-1806<br>
   电话：18228095651 | 邮箱：Steven@qxyqtech.cn | 官网：shenghean.xyz<br>
   <br>本报价单为乾翔关务关税优化方案，实际税率以海关最终核定为准<br>
   生成时间: ${now}
