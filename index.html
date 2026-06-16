@@ -890,6 +890,8 @@ select::-ms-expand { background: white; }
   <div id="quotePreviewContent" style="min-height:300px"></div>
   <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;position:sticky;bottom:0;background:white;padding-top:8px;border-top:1px solid #eee">
     <button class="btn btn-sm btn-outline" onclick="closeQuotePreview()">✕ 关闭预览</button>
+    <button class="btn btn-sm btn-gold" onclick="downloadQuoteFromPreview()">📥 下载报价单</button>
+    <button class="btn btn-sm" style="background:#0D2B5E;color:#fff" onclick="printQuotePreview()">🖨️ 打印</button>
   </div>
 </div></div>
 <div class="modal-overlay" id="bulletinModal"><div class="modal" style="max-width:480px">
@@ -1242,6 +1244,12 @@ function popHsDropdowns() {
   if(directSel) directSel.innerHTML = '<option value="">— ' + t('pleaseSelect') + ' —</option>' + opts;
 }
 popHsDropdowns();
+
+// PDF export logo — grab from the header img element
+const PDF_LOGO = (()=>{
+  const el = document.querySelector('.header-left img');
+  return el ? el.src : '';
+})();
 
 // ========== ROLE (测试模式 — 自由切换，后续接Supabase Auth锁定) ==========
 let currentRole = 'cn';
@@ -3052,9 +3060,12 @@ function downloadQuoteFromPreview(){
   if(!_pendingDownload){ toast('⚠️ 没有待下载内容'); return; }
   const { html, fileName, mimeType } = _pendingDownload;
   
+  // Force binary MIME — text/html triggers OS "open with" on blob: URLs
+  const downloadType = 'application/octet-stream';
+  
   // Try native Android bridge first
   if(typeof AndroidDownload !== 'undefined' && AndroidDownload.saveFile){
-    const blob = new Blob([html], {type: mimeType});
+    const blob = new Blob([html], {type: downloadType});
     const afileName = fileName || 'LE报价单.html';
     const reader = new FileReader();
     reader.onload = function(e){
@@ -3070,8 +3081,8 @@ function downloadQuoteFromPreview(){
     return;
   }
   
-  // Fallback: browser <a> download
-  const blob = new Blob([html], {type: mimeType});
+  // Fallback: browser <a> download (octet-stream forces save-as, not open)
+  const blob = new Blob([html], {type: downloadType});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = fileName || 'LE报价单.html';
