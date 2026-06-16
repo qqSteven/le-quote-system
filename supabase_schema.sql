@@ -85,6 +85,8 @@ CREATE TABLE IF NOT EXISTS files (
   hs TEXT DEFAULT 'UNKNOWN',
   size BIGINT DEFAULT 0,
   data TEXT,
+  path TEXT,
+  public_url TEXT,
   uploaded_at TIMESTAMPTZ DEFAULT NOW(),
   uploaded_by TEXT DEFAULT 'anon'
 );

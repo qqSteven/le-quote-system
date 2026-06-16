@@ -116,7 +116,7 @@ const DB = {
   async getFiles() {
     if(getSupabase()) {
       const { data, error } = await getSupabase().from('files').select('*').order('uploaded_at',{ascending:false});
-      if(!error) return data.map(f=>({...f, uploadedAt:f.uploaded_at, uploadedBy:f.uploaded_by}));
+      if(!error) return data.map(f=>({...f, uploadedAt:f.uploaded_at, uploadedBy:f.uploaded_by, publicUrl:f.public_url, blobURL:null}));
     }
     return JSON.parse(localStorage.getItem('le_files')||'[]');
   },
@@ -126,7 +126,8 @@ const DB = {
       for(const f of files) {
         await getSupabase().from('files').upsert({
           id: f.id, name: f.name, type: f.type, hs: f.hs, size: f.size,
-          data: f.data, uploaded_at: f.uploadedAt, uploaded_by: f.uploadedBy||'anon'
+          data: f.data, path: f.path||null, public_url: f.publicUrl||null,
+          uploaded_at: f.uploadedAt, uploaded_by: f.uploadedBy||'anon'
         }, {onConflict:'id'});
       }
     }
