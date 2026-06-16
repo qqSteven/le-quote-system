@@ -2760,17 +2760,19 @@ async function downloadFileFromList(fileId){
   const url = f.publicUrl || f.blobURL;
   if(!url){ toast('⚠️ 文件未同步到云端，请上传者重新上传'); return; }
   
+  console.log('📥 Downloading:', url, '→', f.name);
+  
   // APK: use native AndroidDownload bridge
   if(typeof AndroidDownload !== 'undefined' && AndroidDownload.saveFile){
     try {
       const resp = await fetch(url);
-      if(!resp.ok) throw new Error('HTTP '+resp.status);
+      if(!resp.ok) throw new Error('HTTP '+resp.status+' — 链接可能已失效');
       const blob = await resp.blob();
       const reader = new FileReader();
-      reader.onload = function(e){ AndroidDownload.saveFile(e.target.result, f.name, f.type); };
+      reader.onload = function(e){ AndroidDownload.saveFile(e.target.result, f.name, f.type||'application/octet-stream'); };
       reader.onerror = function(){ toast('⚠️ 文件读取失败'); };
       reader.readAsDataURL(blob);
-    } catch(e) { toast('❌ 下载失败: '+e.message); }
+    } catch(e) { toast('❌ 下载失败: '+e.message+'\n'+url.slice(0,80)+'...'); }
     return;
   }
   

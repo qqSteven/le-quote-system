@@ -6,6 +6,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.os.Environment;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
@@ -25,6 +27,7 @@ import android.webkit.WebViewClient;
 import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 
 public class MainActivity extends Activity {
     // Load from GitHub Pages — always gets the latest web version
@@ -217,7 +220,25 @@ public class MainActivity extends Activity {
                     }
                     byte[] bytes = android.util.Base64.decode(cleanData, android.util.Base64.DEFAULT);
                     
-                    // Save to public Downloads folder (visible in file manager)
+                    // Android 10+ (API 29): use MediaStore for proper scoped storage
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        ContentValues values = new ContentValues();
+                        values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+                        values.put(MediaStore.Downloads.MIME_TYPE, mimeType != null ? mimeType : "application/octet-stream");
+                        values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                        Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                        if (uri != null) {
+                            OutputStream os = getContentResolver().openOutputStream(uri);
+                            if (os != null) {
+                                os.write(bytes);
+                                os.close();
+                                Toast.makeText(MainActivity.this, "📥 已保存到下载文件夹: " + fileName, Toast.LENGTH_LONG).show();
+                                return;
+                            }
+                        }
+                    }
+                    
+                    // Legacy fallback (Android 9 and below, or MediaStore failed)
                     java.io.File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                     if (dir == null || !dir.canWrite()) dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
                     if (dir == null) dir = getFilesDir(); // ultimate fallback to internal
@@ -227,7 +248,8 @@ public class MainActivity extends Activity {
                     fos.write(bytes);
                     fos.close();
                     
-                    Toast.makeText(MainActivity.this, "📥 已保存: " + fileName + " (内部存储/Download)", Toast.LENGTH_LONG).show();
+                    String location = dir.getAbsolutePath().contains("Android/data") ? "应用私有目录/Download" : "下载文件夹";
+                    Toast.makeText(MainActivity.this, "📥 已保存: " + fileName + " (" + location + ")", Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "❌ 保存失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }

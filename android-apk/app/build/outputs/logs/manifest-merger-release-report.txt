@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
-INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
-INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
-INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-28:12
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-28:12
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-28:12
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-28:12
 	package
 		INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
 	android:versionName
@@ -31,10 +31,12 @@ ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\Andro
 	android:name
 		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:8:22-74
 application
-ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:5-26:19
-INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:5-26:19
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:5-27:19
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:5-27:19
 	android:extractNativeLibs
 		INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
+	android:requestLegacyExternalStorage
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:17:9-52
 	android:supportsRtl
 		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:14:9-35
 	android:label
@@ -48,23 +50,23 @@ INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\An
 	android:usesCleartextTraffic
 		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:16:9-44
 activity#com.le.quote.MainActivity
-ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:17:9-25:20
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:18:9-26:20
 	android:exported
-		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:20:13-36
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:21:13-36
 	android:configChanges
-		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:19:13-87
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:20:13-87
 	android:name
-		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:18:13-41
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:19:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:21:13-24:29
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:13-25:29
 action#android.intent.action.MAIN
-ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:17-69
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:17-69
 	android:name
-		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:25-66
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:25-66
 category#android.intent.category.LAUNCHER
-ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:17-77
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:24:17-77
 	android:name
-		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:27-74
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:24:27-74
 uses-sdk
 INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml

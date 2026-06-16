@@ -1,8 +1,8 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 3    package="com.le.quote"
-4    android:versionCode="4"
-5    android:versionName="1.7.3" >
+4    android:versionCode="5"
+5    android:versionName="2.1.4" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="24"
@@ -27,7 +27,7 @@
 18-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:8:22-74
 19
 20    <application
-20-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:5-26:19
+20-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:5-27:19
 21        android:allowBackup="true"
 21-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:11:9-35
 22        android:extractNativeLibs="false"
@@ -35,31 +35,33 @@
 23-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:12:9-43
 24        android:label="LE报价"
 24-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:13:9-29
-25        android:supportsRtl="true"
-25-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:14:9-35
-26        android:theme="@style/Theme.LEQuote"
-26-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:15:9-45
-27        android:usesCleartextTraffic="true" >
-27-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:16:9-44
-28        <activity
-28-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:17:9-25:20
-29            android:name="com.le.quote.MainActivity"
-29-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:18:13-41
-30            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-30-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:19:13-87
-31            android:exported="true" >
-31-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:20:13-36
-32            <intent-filter>
-32-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:21:13-24:29
-33                <action android:name="android.intent.action.MAIN" />
-33-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:17-69
-33-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:25-66
-34
-35                <category android:name="android.intent.category.LAUNCHER" />
-35-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:17-77
-35-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:27-74
-36            </intent-filter>
-37        </activity>
-38    </application>
-39
-40</manifest>
+25        android:requestLegacyExternalStorage="true"
+25-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:17:9-52
+26        android:supportsRtl="true"
+26-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:14:9-35
+27        android:theme="@style/Theme.LEQuote"
+27-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:15:9-45
+28        android:usesCleartextTraffic="true" >
+28-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:16:9-44
+29        <activity
+29-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:18:9-26:20
+30            android:name="com.le.quote.MainActivity"
+30-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:19:13-41
+31            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+31-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:20:13-87
+32            android:exported="true" >
+32-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:21:13-36
+33            <intent-filter>
+33-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:13-25:29
+34                <action android:name="android.intent.action.MAIN" />
+34-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:17-69
+34-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:25-66
+35
+36                <category android:name="android.intent.category.LAUNCHER" />
+36-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:24:17-77
+36-->F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:24:27-74
+37            </intent-filter>
+38        </activity>
+39    </application>
+40
+41</manifest>
