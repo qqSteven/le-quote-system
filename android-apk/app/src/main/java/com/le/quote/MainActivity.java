@@ -5,14 +5,19 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintManager;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -20,7 +25,6 @@ import android.webkit.WebViewClient;
 import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
-import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
     // Use GitHub Pages (legacy builder, works directly from main branch)
@@ -28,7 +32,9 @@ public class MainActivity extends Activity {
     private static final String HOME_URL = "https://qqsteven.github.io/le-quote-system/";
     private static final String CHANNEL_ID = "le_quote_notifications";
     private static final int NOTIF_PERMISSION_REQUEST = 1001;
+    private static final int FILE_CHOOSER_REQUEST = 1002;
     private WebView webView;
+    private ValueCallback<Uri[]> mFilePathCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,11 +65,62 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new NotificationBridge(), "AndroidNotifications");
         // ** Bridge for file downloads (bypasses blob: URL issue in DownloadManager) **
         webView.addJavascriptInterface(new DownloadBridge(), "AndroidDownload");
+        // ** Bridge for native printing (bypasses window.print() in WebView) **
+        webView.addJavascriptInterface(new PrintBridge(), "AndroidPrint");
 
         webView.setWebViewClient(new WebViewClient());
-        webView.setWebChromeClient(new WebChromeClient());
+
+        // ** CRITICAL: WebChromeClient with file chooser support **
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+                if (mFilePathCallback != null) {
+                    mFilePathCallback.onReceiveValue(null);
+                }
+                mFilePathCallback = filePathCallback;
+
+                Intent intent = fileChooserParams.createIntent();
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                String[] mimeTypes = fileChooserParams.getAcceptTypes();
+                if (mimeTypes != null && mimeTypes.length > 0) {
+                    intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+                }
+
+                try {
+                    startActivityForResult(Intent.createChooser(intent, "选择文件"), FILE_CHOOSER_REQUEST);
+                } catch (ActivityNotFoundException e) {
+                    mFilePathCallback = null;
+                    Toast.makeText(MainActivity.this, "无法打开文件选择器", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                return true;
+            }
+        });
 
         webView.loadUrl(HOME_URL);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_CHOOSER_REQUEST) {
+            if (mFilePathCallback == null) return;
+            Uri[] results = null;
+            if (resultCode == RESULT_OK && data != null) {
+                if (data.getClipData() != null) {
+                    int count = data.getClipData().getItemCount();
+                    results = new Uri[count];
+                    for (int i = 0; i < count; i++) {
+                        results[i] = data.getClipData().getItemAt(i).getUri();
+                    }
+                } else if (data.getData() != null) {
+                    results = new Uri[]{data.getData()};
+                }
+            }
+            mFilePathCallback.onReceiveValue(results);
+            mFilePathCallback = null;
+        }
     }
 
     private void requestNotificationPermission() {
@@ -172,6 +229,32 @@ public class MainActivity extends Activity {
                     Toast.makeText(MainActivity.this, "📥 已保存: " + fileName + " (内部存储/Download)", Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "❌ 保存失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    /** JavaScript bridge — native print/PDF via PrintManager */
+    public class PrintBridge {
+        @JavascriptInterface
+        public void print(String jobName) {
+            runOnUiThread(() -> {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        PrintManager printManager = (PrintManager) getSystemService(PRINT_SERVICE);
+                        PrintDocumentAdapter adapter = webView.createPrintDocumentAdapter(
+                            jobName != null && !jobName.isEmpty() ? jobName : "LE文档"
+                        );
+                        printManager.print(
+                            jobName != null && !jobName.isEmpty() ? jobName : "LE文档",
+                            adapter,
+                            new PrintAttributes.Builder().build()
+                        );
+                    } else {
+                        Toast.makeText(MainActivity.this, "打印需要 Android 5.0+", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "打印失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
