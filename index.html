@@ -2659,7 +2659,8 @@ async function triggerFileUpload(){
     
     uploadedFiles.push({
       id, hsCode, docType, name: file.name, size: file.size, type: file.type,
-      path, publicUrl, uploadedAt: new Date().toLocaleString()
+      path, publicUrl, uploadedAt: new Date().toLocaleString(),
+      uploadedBy: currentUser ? currentUser.name : 'anon'
     });
   }
   localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
@@ -2710,15 +2711,21 @@ function deleteFile(id){
   const idx = uploadedFiles.findIndex(f=>f.id===id);
   if(idx>=0){
     const f = uploadedFiles[idx];
+    // Only uploader (or admin) can delete
+    if(currentUser && currentUser.role!=='admin' && f.uploadedBy && f.uploadedBy!==currentUser.name && f.uploadedBy!=='anon'){
+      toast('⚠️ 只有上传者或管理员才能删除');
+      return;
+    }
     if(f.blobURL) URL.revokeObjectURL(f.blobURL);
-    // Delete from Supabase Storage + DB
-    if(typeof DB !== 'undefined' && DB.deleteFile) DB.deleteFile(id, f.path).catch(()=>{});
+    // Delete from Supabase DB + Storage
+    if(typeof DB !== 'undefined' && DB.deleteFile) {
+      DB.deleteFile(id, f.path).then(()=>console.log('✅ Deleted from Supabase:',id)).catch(e=>console.warn('Delete failed:',e.message));
+    }
     uploadedFiles.splice(idx,1);
     localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
-    if(typeof DB !== 'undefined' && DB.saveFiles) DB.saveFiles(uploadedFiles).catch(()=>{});
+    renderFiles();
+    toast('🗑️ '+t('fileDeleted'));
   }
-  renderFiles();
-  toast('🗑️ '+t('fileDeleted'));
 }
 
 function previewFile(id){
@@ -2758,12 +2765,13 @@ function renderFiles(){
         <div>
           <div style="font-weight:600">${f.name}</div>
           <div style="font-size:12px;color:#999">${f.docType} · ${sizeStr} · ${f.uploadedAt} · ${f.hsCode!=='—'?'🔗 HS: '+f.hsCode:''}</div>
+          <div style="font-size:10px;color:#aaa">上传者: ${f.uploadedBy||'anon'}</div>
         </div>
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-sm" style="background:#e3f2fd;color:#0D2B5E" onclick="previewFile('${f.id}')" data-i18n="preview">👁 预览</button>
         <a href="${f.publicUrl||f.blobURL}" download="${f.name}" class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;text-decoration:none;padding:6px 12px;border-radius:6px" data-i18n="downloadFile">⬇ 下载</a>
-        ${roleCan('upload_files')?`<button class="btn btn-sm" style="background:#fce4ec;color:#c62828" onclick="deleteFile('${f.id}')">🗑</button>`:''}
+        ${(currentUser && (currentUser.role==='admin' || f.uploadedBy===currentUser.name || f.uploadedBy==='anon'))?`<button class="btn btn-sm" style="background:#fce4ec;color:#c62828" onclick="deleteFile('${f.id}')">🗑</button>`:''}
       </div>
     </div>`;
   }).join('');
