@@ -1410,11 +1410,11 @@ function roleCan(permission){
 }
 function roleApplyUI(){
   const tabs = document.querySelectorAll('.tab');
-  // Tab order: dashboard(0), tariff(1), direct(2), approval(3), clients(4), files(5), history(6), ddp(7), admin(8)
+  // Tab order: dashboard(0), tariff(1), direct(2), approval(3), clients(4), files(5), history(6), ddp(7), orders(8), admin(9)
   const tabVisible = {
-    'cn':    [true, true, true, true, true, true, true, true, false],
-    'us':    [true, false, false, true, true, true, true, true, false],
-    'admin': [true, true, true, true, true, true, true, true, true],
+    'cn':    [true, true, true, true, true, true, true, true, true, false],
+    'us':    [true, false, false, true, true, true, true, true, true, false],
+    'admin': [true, true, true, true, true, true, true, true, true, true],
   };
   const vis = tabVisible[currentRole] || [true,true,true,true,true,true,true,true,false];
   tabs.forEach((t,i)=>{ t.style.display = vis[i] ? '' : 'none'; });
