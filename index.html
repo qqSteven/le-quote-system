@@ -1769,6 +1769,7 @@ function postBulletin(){
   bulletinPosts.unshift(post);
   if(bulletinPosts.length > 50) bulletinPosts = bulletinPosts.slice(0, 50); // keep last 50
   localStorage.setItem('le_posts', JSON.stringify(bulletinPosts));
+  if(typeof DB !== 'undefined' && DB.saveBulletins) DB.saveBulletins(bulletinPosts);
   closeModal('bulletinModal');
   toast(t('bulletinPosted'));
   renderBulletins();
@@ -1816,6 +1817,7 @@ function addComment(postId){
   bulletinComments[postId].push({ author: currentUser.name, text, time: new Date().toISOString() });
   if(bulletinComments[postId].length > 30) bulletinComments[postId] = bulletinComments[postId].slice(-30);
   localStorage.setItem('le_comments', JSON.stringify(bulletinComments));
+  if(typeof DB !== 'undefined' && DB.addComment) DB.addComment(postId, {author:currentUser.name, text, time:new Date().toISOString()});
   inp.value = '';
   renderBulletins();
 }
@@ -2648,6 +2650,7 @@ function triggerFileUpload(){
     });
   });
   localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
+  if(typeof DB !== 'undefined' && DB.saveFiles) DB.saveFiles(uploadedFiles);
   const count = inp.files.length;
   inp.value = '';
   document.getElementById('uploadFileHint').style.display = 'none';
