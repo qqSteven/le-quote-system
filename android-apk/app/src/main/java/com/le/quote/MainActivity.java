@@ -27,9 +27,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 public class MainActivity extends Activity {
-    // Use GitHub Pages (legacy builder, works directly from main branch)
-    // Add ?t= parameter to bust GitHub's CDN cache on updates
-    private static final String HOME_URL = "file:///android_asset/index.html";
+    // Load from GitHub Pages — always gets the latest web version
+    // Same source as the web app, so data sync and features stay in sync
+    private static final String HOME_URL = "https://qqsteven.github.io/le-quote-system/";
     private static final String CHANNEL_ID = "le_quote_notifications";
     private static final int NOTIF_PERMISSION_REQUEST = 1001;
     private static final int FILE_CHOOSER_REQUEST = 1002;

@@ -1,75 +1,75 @@
 -- Merging decision tree log ---
 manifest
-ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
-INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
-INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
-INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:1-27:12
 	package
-		INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
+		INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
 	android:versionName
-		INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
+		INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
 	android:versionCode
-		INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
+		INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
 	xmlns:android
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:11-69
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:2:11-69
 uses-permission#android.permission.INTERNET
-ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:3:5-67
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:3:5-67
 	android:name
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:3:22-64
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:3:22-64
 uses-permission#android.permission.VIBRATE
-ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:4:5-66
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:4:5-66
 	android:name
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:4:22-63
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:4:22-63
 uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
-ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:5:5-108
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:5:5-108
 	android:maxSdkVersion
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:5:79-105
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:5:79-105
 	android:name
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:5:22-78
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:5:22-78
 uses-permission#android.permission.POST_NOTIFICATIONS
-ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:8:5-77
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:8:5-77
 	android:name
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:8:22-74
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:8:22-74
 application
-ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:5-26:19
-INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:5-26:19
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:5-26:19
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:10:5-26:19
 	android:extractNativeLibs
-		INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
+		INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
 	android:supportsRtl
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:14:9-35
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:14:9-35
 	android:label
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:13:9-29
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:13:9-29
 	android:icon
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:12:9-43
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:12:9-43
 	android:allowBackup
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:11:9-35
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:11:9-35
 	android:theme
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:15:9-45
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:15:9-45
 	android:usesCleartextTraffic
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:16:9-44
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:16:9-44
 activity#com.le.quote.MainActivity
-ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:17:9-25:20
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:17:9-25:20
 	android:exported
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:20:13-36
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:20:13-36
 	android:configChanges
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:19:13-87
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:19:13-87
 	android:name
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:18:13-41
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:18:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:21:13-24:29
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:21:13-24:29
 action#android.intent.action.MAIN
-ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:17-69
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:17-69
 	android:name
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:25-66
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:22:25-66
 category#android.intent.category.LAUNCHER
-ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:17-77
+ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:17-77
 	android:name
-		ADDED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:27-74
+		ADDED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml:23:27-74
 uses-sdk
-INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
-INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
-INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
+INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
 	android:targetSdkVersion
-		INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
+		INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
 	android:minSdkVersion
-		INJECTED from F:\工作文件\Claw\le-quote-system\android-apk\app\src\main\AndroidManifest.xml
+		INJECTED from F:\工作文件\LE报价系统\le-quote-system\android-apk\app\src\main\AndroidManifest.xml

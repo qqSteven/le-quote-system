@@ -1,6 +1,6 @@
 <lint-module
     format="1"
-    dir="F:\工作文件\Claw\le-quote-system\android-apk\app"
+    dir="F:\工作文件\LE报价系统\le-quote-system\android-apk\app"
     name=":app"
     type="APP"
     maven="LE Quote:app:"
