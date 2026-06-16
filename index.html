@@ -3789,23 +3789,23 @@ function updateLogisticsStep(orderId){
     d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 })();
 </script>
-<!-- Supabase SDK: 内嵌本地，不依赖CDN -->
-<script defer src="supabase.min.js"></script>
-<script defer>
+<!-- Supabase SDK: 同步加载，不依赖CDN -->
+<script src="supabase.min.js"></script>
+<script>
 const SUPABASE_URL = 'https://nhfhwbnhibqyqdxpclkc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_sHwxc_z2DOS4wIxI8bEWSA_dX3UDB9J';
 let supabase = null;
-window.addEventListener('load', () => {
-  try { 
+(function initSupabase(){
+  try {
     if(window.supabase) {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      console.log('✅ Supabase connected');
+      console.log('✅ Supabase connected: '+SUPABASE_URL);
     } else {
-      console.warn('⚠️ Supabase SDK not loaded — using localStorage only');
+      console.warn('⚠️ window.supabase undefined — Supabase SDK failed to load');
     }
-    if(typeof DB !== 'undefined') setTimeout(()=>DB.init(), 1000);
-  } catch(e) { console.log('Supabase init deferred:', e.message); }
-});
+    if(typeof DB !== 'undefined') DB.init();
+  } catch(e) { console.error('Supabase init error:', e.message); }
+})();
 </script>
 </body>
 </html>
