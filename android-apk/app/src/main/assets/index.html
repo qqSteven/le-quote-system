@@ -3250,6 +3250,10 @@ function exportQuotePDF(quoteId, status){
     };
     reader.onerror = function(){ toast('读取失败，请重试'); };
     reader.readAsDataURL(blob);
+    // ALSO show preview modal so user can see & print
+    _pendingDownload = { html, fileName, mimeType: 'text/html;charset=utf-8' };
+    document.getElementById('quotePreviewContent').innerHTML = html;
+    document.getElementById('quotePreviewModal').classList.add('show');
     return;
   }
 
