@@ -3243,18 +3243,23 @@ function printQuotePreview(){
     // Hide no-print elements
     document.querySelectorAll('#quotePreviewModal .no-print').forEach(el => el.style.display = 'none');
     
-    AndroidPrint.print('乾翔关务报价单');
-    toast('🖨️ 正在打开打印对话框...');
-    
-    // Restore after print dialog has time to capture the page
-    setTimeout(()=>{
-      overlay.style.background = origBg;
-      overlay.style.position = origPos;
-      overlay.style.top = ''; overlay.style.left = '';
-      overlay.style.width = ''; overlay.style.height = '';
-      overlay.style.zIndex = '';
-      document.querySelectorAll('#quotePreviewModal .no-print').forEach(el => el.style.display = '');
-    }, 1200);
+    // Wait for DOM render before capturing print output
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        AndroidPrint.print('乾翔关务报价单');
+        toast('🖨️ 正在打开打印对话框...');
+        
+        // Restore after print dialog has time to capture the page
+        setTimeout(()=>{
+          overlay.style.background = origBg;
+          overlay.style.position = origPos;
+          overlay.style.top = ''; overlay.style.left = '';
+          overlay.style.width = ''; overlay.style.height = '';
+          overlay.style.zIndex = '';
+          document.querySelectorAll('#quotePreviewModal .no-print').forEach(el => el.style.display = '');
+        }, 1500);
+      });
+    });
     return;
   }
   // Fallback: window.print() with print-only style
