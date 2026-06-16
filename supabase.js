@@ -224,6 +224,10 @@ const DB = {
         window.orders.splice(0, window.orders.length, ...orders);
         if(typeof saveOrders === 'function') saveOrders();
       }
+      if(files.length && typeof uploadedFiles !== 'undefined') {
+        uploadedFiles.splice(0, uploadedFiles.length, ...files);
+        if(typeof renderFiles === 'function') renderFiles();
+      }
       
       // Re-render UI
       if(typeof renderApproval === 'function') renderApproval();
