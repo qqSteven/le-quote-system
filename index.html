@@ -1477,8 +1477,8 @@ let directRequests = (()=>{
 })();
 let pendingSubmit = null;
 
-function saveApprovalQueue(){ localStorage.setItem('le_approval_queue', JSON.stringify(approvalQueue)); if(typeof DB !== 'undefined' && DB.saveQuotes) DB.saveQuotes(approvalQueue); }
-function saveDirectRequests(){ localStorage.setItem('le_direct_requests', JSON.stringify(directRequests)); if(typeof DB !== 'undefined' && DB.saveDirectRequests) DB.saveDirectRequests(directRequests); }
+function saveApprovalQueue(){ localStorage.setItem('le_approval_queue', JSON.stringify(approvalQueue)); if(typeof DB !== 'undefined' && DB.saveQuotes) DB.saveQuotes(approvalQueue).catch(e=>console.warn('DB.saveQuotes:',e.message)); }
+function saveDirectRequests(){ localStorage.setItem('le_direct_requests', JSON.stringify(directRequests)); if(typeof DB !== 'undefined' && DB.saveDirectRequests) DB.saveDirectRequests(directRequests).catch(e=>console.warn('DB.saveDirect:',e.message)); }
 
 function popHsDropdowns() {
   const opts = hsData.map(h => `<option value="${h.code}" data-mfn="${h.mfn}" data-s301="${h.s301}" data-s122="${h.s122}">${h.code} ${typeof h.name==='function'?h.name():h.name} (${(h.mfn+h.s301+h.s122).toFixed(1)}%)</option>`).join('');
@@ -1577,7 +1577,7 @@ let registeredUsers = (()=>{
 let currentUser = JSON.parse(localStorage.getItem('le_current_user')||'null');
 
 function saveUsersRaw(arr){ localStorage.setItem('le_users', JSON.stringify(arr)); }
-function saveUsers(){ saveUsersRaw(registeredUsers); if(typeof DB !== 'undefined' && DB.saveUsers) DB.saveUsers(registeredUsers); }
+function saveUsers(){ saveUsersRaw(registeredUsers); if(typeof DB !== 'undefined' && DB.saveUsers) DB.saveUsers(registeredUsers).catch(e=>console.warn('DB.saveUsers:',e.message)); }
 function saveCurrentUser(){ localStorage.setItem('le_current_user', JSON.stringify(currentUser)); }
 
 function doRegister(){
@@ -1769,7 +1769,7 @@ function postBulletin(){
   bulletinPosts.unshift(post);
   if(bulletinPosts.length > 50) bulletinPosts = bulletinPosts.slice(0, 50); // keep last 50
   localStorage.setItem('le_posts', JSON.stringify(bulletinPosts));
-  if(typeof DB !== 'undefined' && DB.saveBulletins) DB.saveBulletins(bulletinPosts);
+  if(typeof DB !== 'undefined' && DB.saveBulletins) DB.saveBulletins(bulletinPosts).catch(e=>console.warn('DB.saveBulletins:',e.message));
   closeModal('bulletinModal');
   toast(t('bulletinPosted'));
   renderBulletins();
@@ -1817,7 +1817,7 @@ function addComment(postId){
   bulletinComments[postId].push({ author: currentUser.name, text, time: new Date().toISOString() });
   if(bulletinComments[postId].length > 30) bulletinComments[postId] = bulletinComments[postId].slice(-30);
   localStorage.setItem('le_comments', JSON.stringify(bulletinComments));
-  if(typeof DB !== 'undefined' && DB.addComment) DB.addComment(postId, {author:currentUser.name, text, time:new Date().toISOString()});
+  if(typeof DB !== 'undefined' && DB.addComment) DB.addComment(postId, {author:currentUser.name, text, time:new Date().toISOString()}).catch(e=>console.warn('DB.comment:',e.message));
   inp.value = '';
   renderBulletins();
 }
@@ -2417,7 +2417,7 @@ let customerLostRecords = (()=>{
   try { return JSON.parse(localStorage.getItem('le_customer_lost')||'[]'); }
   catch(e){ return []; }
 })();
-function saveCustomerLost(){ localStorage.setItem('le_customer_lost', JSON.stringify(customerLostRecords)); if(typeof DB !== 'undefined' && DB.saveCustomerLost) DB.saveCustomerLost(customerLostRecords); }
+function saveCustomerLost(){ localStorage.setItem('le_customer_lost', JSON.stringify(customerLostRecords)); if(typeof DB !== 'undefined' && DB.saveCustomerLost) DB.saveCustomerLost(customerLostRecords).catch(e=>console.warn('DB.saveLost:',e.message)); }
 function getLostReason(quoteId){
   const rec = customerLostRecords.find(r=>r.quoteId===quoteId);
   return rec ? rec.reason : null;
@@ -2650,7 +2650,7 @@ function triggerFileUpload(){
     });
   });
   localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
-  if(typeof DB !== 'undefined' && DB.saveFiles) DB.saveFiles(uploadedFiles);
+  if(typeof DB !== 'undefined' && DB.saveFiles) DB.saveFiles(uploadedFiles).catch(e=>console.warn('DB.saveFiles:',e.message));
   const count = inp.files.length;
   inp.value = '';
   document.getElementById('uploadFileHint').style.display = 'none';
@@ -3666,7 +3666,7 @@ const LOGISTICS_STEPS = [
   {key:'customs', icon:'🛃', label:'清关'},
   {key:'delivery', icon:'📦', label:'交付'}
 ];
-function saveOrders(){ localStorage.setItem('le_orders',JSON.stringify(orders)); if(typeof DB !== 'undefined' && DB.saveOrders) DB.saveOrders(orders); }
+function saveOrders(){ localStorage.setItem('le_orders',JSON.stringify(orders)); if(typeof DB !== 'undefined' && DB.saveOrders) DB.saveOrders(orders).catch(e=>console.warn('DB.saveOrders:',e.message)); }
 function getOrderStatusLabel(s){
   const m={'processing':'备货中','shipping':'运输中','customs':'清关中','delivering':'派送中','delivered':'已交付'};
   return m[s]||s;
