@@ -2629,29 +2629,41 @@ function openUploadDialog(){
   document.getElementById('uploadDialog').classList.add('show');
 }
 
-function triggerFileUpload(){
+async function triggerFileUpload(){
   const inp = document.getElementById('fileUploadInput');
   if(!inp.files || !inp.files.length){
     toast(t('filesSelectFirst'));
     return;
   }
-  // Upload selected files
   const hsSelect = document.getElementById('uploadHsSelect').value;
   const hsCustom = document.getElementById('uploadHsCustom').value.trim();
   const hsCode = hsCustom || hsSelect || '—';
   const docType = document.getElementById('uploadDocType').value;
-  Array.from(inp.files).forEach(file => {
-    const blobURL = URL.createObjectURL(file);
+  const count = inp.files.length;
+  
+  for(const file of Array.from(inp.files)){
+    const id = 'FILE-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,6);
+    const path = id+'/'+encodeURIComponent(file.name);
+    let publicUrl = null;
+    
+    // Upload to Supabase Storage if available
+    if(window.__sb){
+      try {
+        const { data, error } = await window.__sb.storage.from('files').upload(path, file, {upsert: true});
+        if(!error){
+          const { data:urlData } = window.__sb.storage.from('files').getPublicUrl(path);
+          publicUrl = urlData.publicUrl;
+        }
+      } catch(e){ console.warn('Storage upload failed, using local only:', e.message); }
+    }
+    
     uploadedFiles.push({
-      id: 'FILE-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,6),
-      hsCode, docType, name: file.name,
-      size: file.size, type: file.type, blobURL,
-      uploadedAt: new Date().toLocaleString()
+      id, hsCode, docType, name: file.name, size: file.size, type: file.type,
+      path, publicUrl, uploadedAt: new Date().toLocaleString()
     });
-  });
+  }
   localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
   if(typeof DB !== 'undefined' && DB.saveFiles) DB.saveFiles(uploadedFiles).catch(e=>console.warn('DB.saveFiles:',e.message));
-  const count = inp.files.length;
   inp.value = '';
   document.getElementById('uploadFileHint').style.display = 'none';
   closeModal('uploadDialog');
@@ -2697,7 +2709,11 @@ function deleteFile(id){
   if(!confirm(t('deleteFileConfirm'))) return;
   const idx = uploadedFiles.findIndex(f=>f.id===id);
   if(idx>=0){
-    URL.revokeObjectURL(uploadedFiles[idx].blobURL);
+    if(uploadedFiles[idx].blobURL) URL.revokeObjectURL(uploadedFiles[idx].blobURL);
+    // Optionally delete from Supabase Storage
+    if(window.__sb && uploadedFiles[idx].path){
+      window.__sb.storage.from('files').remove([uploadedFiles[idx].path]).catch(()=>{});
+    }
     uploadedFiles.splice(idx,1);
   }
   renderFiles();
@@ -2707,19 +2723,20 @@ function deleteFile(id){
 function previewFile(id){
   const f = uploadedFiles.find(x=>x.id===id);
   if(!f) return;
+  const url = f.publicUrl || f.blobURL;
   const sizeKB = (f.size/1024).toFixed(1);
   const isPDF = f.type==='application/pdf' || f.name.toLowerCase().endsWith('.pdf');
   const isImage = f.type.startsWith('image/');
   let content = `<h3 style="margin-bottom:12px">📄 ${f.name}</h3>
     <p style="color:#999;font-size:12px;margin-bottom:16px">${f.docType} · ${sizeKB}KB · ${f.uploadedAt}</p>`;
   if(isPDF){
-    content += `<iframe src="${f.blobURL}" style="width:100%;height:70vh;border:none;border-radius:8px"></iframe>`;
+    content += `<iframe src="${url}" style="width:100%;height:70vh;border:none;border-radius:8px"></iframe>`;
   } else if(isImage){
-    content += `<img src="${f.blobURL}" style="max-width:100%;max-height:70vh;border-radius:8px">`;
+    content += `<img src="${url}" style="max-width:100%;max-height:70vh;border-radius:8px">`;
   } else {
-    content += `<p style="text-align:center;color:#999;padding:40px">${t('previewNotAvailable')}<br><a href="${f.blobURL}" download="${f.name}" style="color:#0D2B5E">${t('downloadFile')}</a></p>`;
+    content += `<p style="text-align:center;color:#999;padding:40px">${t('previewNotAvailable')}<br><a href="${url}" download="${f.name}" style="color:#0D2B5E">${t('downloadFile')}</a></p>`;
   }
-  content += `<div style="margin-top:12px;text-align:right"><a href="${f.blobURL}" download="${f.name}" class="btn btn-primary">⬇ ${t('downloadFile')}</a> <button class="btn" style="background:#eee" onclick="closeModal('filePreviewModal')">${t('close')}</button></div>`;
+  content += `<div style="margin-top:12px;text-align:right"><a href="${url}" download="${f.name}" class="btn btn-primary">⬇ ${t('downloadFile')}</a> <button class="btn" style="background:#eee" onclick="closeModal('filePreviewModal')">${t('close')}</button></div>`;
   document.getElementById('filePreviewContent').innerHTML = content;
   document.getElementById('filePreviewModal').classList.add('show');
 }
@@ -2744,7 +2761,7 @@ function renderFiles(){
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-sm" style="background:#e3f2fd;color:#0D2B5E" onclick="previewFile('${f.id}')" data-i18n="preview">👁 预览</button>
-        <a href="${f.blobURL}" download="${f.name}" class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;text-decoration:none;padding:6px 12px;border-radius:6px" data-i18n="downloadFile">⬇ 下载</a>
+        <a href="${f.publicUrl||f.blobURL}" download="${f.name}" class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;text-decoration:none;padding:6px 12px;border-radius:6px" data-i18n="downloadFile">⬇ 下载</a>
         ${roleCan('upload_files')?`<button class="btn btn-sm" style="background:#fce4ec;color:#c62828" onclick="deleteFile('${f.id}')">🗑</button>`:''}
       </div>
     </div>`;
