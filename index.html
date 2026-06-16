@@ -2709,11 +2709,10 @@ function deleteFile(id){
   if(!confirm(t('deleteFileConfirm'))) return;
   const idx = uploadedFiles.findIndex(f=>f.id===id);
   if(idx>=0){
-    if(uploadedFiles[idx].blobURL) URL.revokeObjectURL(uploadedFiles[idx].blobURL);
-    // Optionally delete from Supabase Storage
-    if(window.__sb && uploadedFiles[idx].path){
-      window.__sb.storage.from('files').remove([uploadedFiles[idx].path]).catch(()=>{});
-    }
+    const f = uploadedFiles[idx];
+    if(f.blobURL) URL.revokeObjectURL(f.blobURL);
+    // Delete from Supabase Storage + DB
+    if(typeof DB !== 'undefined' && DB.deleteFile) DB.deleteFile(id, f.path).catch(()=>{});
     uploadedFiles.splice(idx,1);
     localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
     if(typeof DB !== 'undefined' && DB.saveFiles) DB.saveFiles(uploadedFiles).catch(()=>{});

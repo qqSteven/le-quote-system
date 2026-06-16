@@ -131,6 +131,12 @@ const DB = {
       }
     }
   },
+  async deleteFile(id, path) {
+    if(getSupabase()) {
+      await getSupabase().from('files').delete().eq('id', id);
+      if(path) getSupabase().storage.from('files').remove([path]).catch(()=>{});
+    }
+  },
 
   // --- Orders (v2.0+) ---
   async getOrders() {
