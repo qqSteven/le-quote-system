@@ -2642,8 +2642,9 @@ async function triggerFileUpload(){
   const count = inp.files.length;
   
   for(const file of Array.from(inp.files)){
+    const fileName = file.name || 'unknown_' + Date.now() + '.' + (file.type.split('/')[1] || 'bin');
     const id = 'FILE-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,6);
-    const path = id+'/'+encodeURIComponent(file.name);
+    const path = id+'/'+encodeURIComponent(fileName);
     let publicUrl = null;
     
     // Upload to Supabase Storage if available
@@ -2666,7 +2667,7 @@ async function triggerFileUpload(){
     }
     
     uploadedFiles.push({
-      id, hsCode, docType, name: file.name, size: file.size, type: file.type,
+      id, hsCode, docType, name: fileName, size: file.size, type: file.type,
       path, publicUrl, uploadedAt: new Date().toLocaleString(),
       uploadedBy: currentUser ? currentUser.name : 'anon'
     });
@@ -2822,6 +2823,19 @@ function renderFiles(){
       </div>
     </div>`;
   }).join('');
+}
+
+// Clean up files without valid download URL (dirty records from old buggy uploads)
+function cleanDirtyFiles(){
+  const before = uploadedFiles.length;
+  uploadedFiles = uploadedFiles.filter(f => f.publicUrl || f.blobURL);
+  const removed = before - uploadedFiles.length;
+  if(removed > 0){
+    localStorage.setItem('le_files', JSON.stringify(uploadedFiles));
+    renderFiles();
+    console.log('🧹 Cleaned '+removed+' dirty file records');
+  }
+  return removed;
 }
 
 // ========== DIRECT QUOTE (报价逻辑二) ==========
@@ -3877,7 +3891,7 @@ function updateLogisticsStep(orderId){
         window.__sb = sb.createClient(window.SB_URL, window.SB_KEY);
         console.log('✅ Supabase connected');
       } else { console.warn('⚠️ SDK missing createClient'); }
-      if(typeof DB !== 'undefined') DB.init();
+      if(typeof DB !== 'undefined') DB.init().then(()=>{ if(typeof cleanDirtyFiles==='function'){ const n=cleanDirtyFiles(); if(n) console.log('🧹 Auto-cleaned '+n+' dirty files'); } });
     } catch(e) { console.error('❌ Supabase:', e.message); }
   };
   s.onerror=function(){ console.warn('⚠️ SDK load failed'); };
