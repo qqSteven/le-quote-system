@@ -2647,18 +2647,22 @@ async function triggerFileUpload(){
     let publicUrl = null;
     
     // Upload to Supabase Storage if available
-    if(window.__sb){
-      try {
-        const { data, error } = await window.__sb.storage.from('files').upload(path, file, {upsert: true});
-        if(error){
-          console.error('Storage upload error:', error.message);
-          toast('⚠️ 云端上传失败: '+error.message);
-        } else {
-          const { data:urlData } = window.__sb.storage.from('files').getPublicUrl(path);
-          publicUrl = urlData.publicUrl;
-          console.log('✅ File uploaded to Storage:', publicUrl);
-        }
-      } catch(e){ console.error('Storage upload failed:', e.message); }
+    if(!window.__sb){
+      toast('⚠️ Supabase 未连接，无法上传到云端。请检查网络后重试。');
+      continue; // skip this file — don't add to list
+    }
+    try {
+      const { data, error } = await window.__sb.storage.from('files').upload(path, file, {upsert: true});
+      if(error){
+        toast('⚠️ 云端上传失败: '+error.message);
+        continue; // skip — don't add broken record
+      }
+      const { data:urlData } = window.__sb.storage.from('files').getPublicUrl(path);
+      publicUrl = urlData.publicUrl;
+      console.log('✅ File uploaded to Storage:', publicUrl);
+    } catch(e){
+      toast('⚠️ 云端上传异常: '+e.message);
+      continue; // skip — don't add broken record
     }
     
     uploadedFiles.push({
